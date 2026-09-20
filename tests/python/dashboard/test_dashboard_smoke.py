@@ -43,9 +43,9 @@ def test_all_dashboard_pages_render_without_unhandled_exceptions():
     """Every navigation page must render safely with MT5 unavailable."""
     os.environ["MT5_ENABLED"] = "false"
     os.environ["MT5_DASHBOARD_DIRECT"] = "false"
-    initial = run_apptest_subprocess(DASHBOARD_PATH, 60)
+    initial = run_apptest_subprocess(DASHBOARD_PATH, 60)
     pages = initial.get("pages", [])
-    assert pages
+    assert pages
     for page in pages:
         app = run_apptest_subprocess(DASHBOARD_PATH, 60, page=page)
         assert not app.get("exception"), f"Unhandled exception on dashboard page {page!r}: {app.get('exception_repr')}"
