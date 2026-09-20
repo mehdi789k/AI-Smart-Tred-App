@@ -24,6 +24,8 @@ class LiveTradingLoop:
     closed and keeps all execution auditable.
     """
 
+    _broker_trading_disabled_latch = False
+
     def __init__(
         self,
         trader: AutoTrader,
@@ -137,6 +139,10 @@ class LiveTradingLoop:
         self.last_break_even_actions = []
         if not self.active:
             self.last_status = "inactive"
+            return None
+        if self._broker_trading_disabled_latch:
+            self.stop()
+            self.last_status = "broker_trading_disabled"
             return None
         if not self.workflow.automation_enabled():
             self.last_status = "authorization_expired"
@@ -346,6 +352,7 @@ class LiveTradingLoop:
         result = self.trader.run_cycle(market_data, prices)
         self.last_result = result
         if self._broker_disabled_trading(result):
+            type(self)._broker_trading_disabled_latch = True
             log_event(
                 logger,
                 logging.ERROR,
@@ -381,7 +388,12 @@ class LiveTradingLoop:
 
         non_retryable_retcodes = ("10017", "10026", "10027")
         return any(
-            any(f"retcode {retcode}" in error.lower() for retcode in non_retryable_retcodes)
+            any(
+                f"retcode {retcode}" in error.lower()
+                or f"({retcode})" in error.lower()
+                or f"retcode={retcode}" in error.lower()
+                for retcode in non_retryable_retcodes
+            )
             for error in result.errors
         )
 

@@ -63,6 +63,13 @@ class FakeConnector:
         return {"spread": 0.1}
 
 
+@pytest.fixture(autouse=True)
+def reset_live_loop_safety_latch():
+    LiveTradingLoop._broker_trading_disabled_latch = False
+    yield
+    LiveTradingLoop._broker_trading_disabled_latch = False
+
+
 def make_loop():
     connector = FakeConnector()
     workflow = LiveOrderWorkflow(
@@ -225,6 +232,59 @@ def test_loop_stops_after_broker_disables_trading(monkeypatch):
 
     assert loop.active is False
     assert loop.last_status == "broker_trading_disabled"
+
+
+def test_loop_stops_after_broker_disabled_order_error_format(monkeypatch):
+    monkeypatch.setenv("MT5_AUTO_TRADING_ENABLED", "true")
+    loop, workflow = make_loop()
+    workflow.restore_automation_authorization(time.time() + 30)
+    loop.restore_active()
+    loop.data_provider = lambda *_: ({"EURUSD": {"close": 110.0}}, {"EURUSD": 110.0})
+    loop.trader.run_cycle = lambda *_: loop.trader.cycle_history.append(
+        TradingCycle(
+            timestamp=datetime.now(),
+            signals_generated=1,
+            errors=["Live execution error: MT5 rejected order (10017): Trade disabled"],
+        )
+    ) or loop.trader.cycle_history[-1]
+
+    loop.run_once()
+
+    assert loop.active is False
+    assert loop.last_status == "broker_trading_disabled"
+
+
+def test_broker_disable_latches_all_live_loop_instances(monkeypatch):
+    monkeypatch.setenv("MT5_AUTO_TRADING_ENABLED", "true")
+    monkeypatch.setattr(LiveTradingLoop, "_broker_trading_disabled_latch", False)
+    first_loop, first_workflow = make_loop()
+    first_workflow.restore_automation_authorization(time.time() + 30)
+    first_loop.restore_active()
+    first_loop.data_provider = lambda *_: ({"EURUSD": {"close": 110.0}}, {"EURUSD": 110.0})
+    first_loop.trader.run_cycle = lambda *_: first_loop.trader.cycle_history.append(
+        TradingCycle(
+            timestamp=datetime.now(),
+            signals_generated=1,
+            errors=["MT5 rejected order (10017): Trade disabled"],
+        )
+    ) or first_loop.trader.cycle_history[-1]
+
+    first_loop.run_once()
+
+    second_loop, second_workflow = make_loop()
+    second_workflow.restore_automation_authorization(time.time() + 30)
+    second_loop.restore_active()
+    second_loop.data_provider = lambda *_: (
+        {"EURUSD": {"close": 110.0}},
+        {"EURUSD": 110.0},
+    )
+    second_loop.trader.run_cycle = lambda *_: pytest.fail(
+        "a latched broker-disable state must prevent another order cycle"
+    )
+
+    assert second_loop.run_once() is None
+    assert second_loop.active is False
+    assert second_loop.last_status == "broker_trading_disabled"
 
 
 def test_live_loop_moves_managed_buy_stop_to_break_even(monkeypatch):

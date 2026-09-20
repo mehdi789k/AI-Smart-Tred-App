@@ -12,6 +12,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DASHBOARD_PATH = PROJECT_ROOT / "src" / "python" / "dashboard" / "app.py"
 HELPER = Path(__file__).parent / "apptest_runner.py"
 
+pytestmark = pytest.mark.skipif(
+    sys.platform == "win32",
+    reason="Streamlit AppTest cleanup can interrupt the Windows pytest process",
+)
+
 
 def run_apptest_subprocess(path, timeout, page=None):
     """Run the AppTest in a subprocess to isolate threading/cleanup issues.
