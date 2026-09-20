@@ -47,7 +47,10 @@ jobs:
           }
           python -m ruff format --check $changedFiles
           python -m ruff check $changedFiles
-          python -m mypy --follow-imports=skip $changedFiles
+          # Use the repository mypy configuration so excluded integration
+          # modules (for example the dashboard and MT5 adapter) remain
+          # excluded consistently with the runtime-lock validation job.
+          python -m mypy --follow-imports=skip src/python
       - name: Run tests
         run: python -m pytest -q --import-mode=importlib
       - name: Validate migration history

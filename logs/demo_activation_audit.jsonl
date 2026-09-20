@@ -1523,3 +1523,34 @@
 {"event": "order_accepted", "payload": {"correlation_id": "9d58f94712fd4ef6", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789935943.7212596}
 {"event": "order_accepted", "payload": {"correlation_id": "44a2c7d5e39e4959", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789935943.7324684}
 {"event": "order_outcome_unknown", "payload": {"correlation_id": "7bb015a9453846a7", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789936316.5275226}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "52352cb0c747422e", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789937550.3266926}
+{"event": "order_accepted", "payload": {"correlation_id": "0f083bfb55ab4b78", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789937590.9567552}
+{"event": "order_accepted", "payload": {"correlation_id": "33d4123df7a14ed4", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789937590.9925058}
+{"event": "order_accepted", "payload": {"correlation_id": "340afa5e4edb4159", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.05}, "timestamp": 1789937591.098989}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "39be358e61c746d9", "reason": "malformed_execution_result", "symbol": "EURUSD"}, "timestamp": 1789937591.9031107}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "f302eed30a164bf0", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789937591.9141216}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "a4f90b6cb28741a4", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789937591.9241529}
+{"event": "order_rejected", "payload": {"correlation_id": "e46560bd94db4165", "reason": "broker_rejected", "retcode": 10030, "symbol": "EURUSD"}, "timestamp": 1789937591.935157}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789937592.0446906}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789937592.1980853}
+{"event": "emergency_stop", "payload": {"demo_active": false, "reason": "operator_stop", "status": "stopped", "trade_count": 0}, "timestamp": 1789937592.2060878}
+{"event": "emergency_stop_reset", "payload": {"demo_active": false, "reason": "operator reviewed", "status": "approved", "trade_count": 0}, "timestamp": 1789937592.2080824}
+{"event": "order_accepted", "payload": {"correlation_id": "9d2a9010add4472a", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789937592.2176483}
+{"event": "order_accepted", "payload": {"correlation_id": "80178f4ca08f40c9", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789937592.22683}
+{"event": "order_accepted", "payload": {"correlation_id": "8bb68c7ea8614dc3", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789937592.2506554}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "c61740bcefdd47b9", "reason": "execution_result_unknown", "symbol": "EURUSD"}, "timestamp": 1789937592.3072603}
+{"event": "pending_order_attempt", "payload": {"demo_active": false, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789937592.3167696}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789937592.3257852}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789937592.3267837}
+{"event": "demo_gate_passed", "payload": {"demo_active": true, "status": "allowed", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789937592.3297913}
+{"event": "order_accepted", "payload": {"correlation_id": "079b66ff2c3f45be", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789937592.330789}
+{"event": "demo_trade_registered", "payload": {"demo_active": true, "status": "accepted", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789937592.332786}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "SELL_LIMIT", "price": 101.0, "status": "pending", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789937592.334785}
+{"event": "order_accepted", "payload": {"correlation_id": "2ed38a8a88a946e8", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789937592.3450565}
+{"event": "order_accepted", "payload": {"correlation_id": "9a6c6d5255cd4718", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789937592.357072}
+{"event": "order_accepted", "payload": {"correlation_id": "e789954dfb8f4cdf", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789937592.3666453}
+{"event": "order_accepted", "payload": {"correlation_id": "ee5063a3effe4862", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789937592.3759046}
+{"event": "order_rejected", "payload": {"correlation_id": "ca429bc62a324189", "reason": "order_check_failed", "retcode": 10016, "symbol": "EURUSD"}, "timestamp": 1789937592.4015882}
+{"event": "order_accepted", "payload": {"correlation_id": "7a3c82d08c41470a", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789937592.419839}
+{"event": "order_accepted", "payload": {"correlation_id": "284268c8aac34e5c", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789937592.4298468}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "9888e429cd83464e", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789938441.9710515}

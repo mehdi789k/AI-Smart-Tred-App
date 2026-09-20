@@ -20,9 +20,7 @@ def test_live_trading_fragment_clears_session_after_loop_stops(monkeypatch):
     """A fail-closed loop stop must not be re-created on the next Streamlit rerun."""
     persisted_states = []
     session_state = SimpleNamespace(trading_active=True)
-    session_state.get = lambda key, default=None: getattr(
-        session_state, key, default
-    )
+    session_state.get = lambda key, default=None: getattr(session_state, key, default)
     monkeypatch.setattr(
         dashboard_app.st,
         "session_state",

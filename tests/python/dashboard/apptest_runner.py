@@ -47,7 +47,9 @@ def main():
 
     result = {
         "exception": bool(getattr(app, "exception", None)),
-        "exception_repr": repr(getattr(app, "exception", None)) if getattr(app, "exception", None) else None,
+        "exception_repr": repr(getattr(app, "exception", None))
+        if getattr(app, "exception", None)
+        else None,
         "pages": pages,
     }
 
