@@ -43,7 +43,7 @@
   "shadow_trading_enabled": false,
   "ml_scheduler_symbol": "XAUUSD_l",
   "ml_scheduler_timeframe": "M5",
-  "ml_scheduler_pid": 18328,
+  "ml_scheduler_pid": 11944,
   "dashboard_page": "Overview",
   "ml_training_enabled": true,
   "retrain_schedule": "daily",
