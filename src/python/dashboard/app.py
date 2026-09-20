@@ -1874,6 +1874,14 @@ def _live_trading_fragment_interval(trading_active: bool) -> float | None:
     return max(1.0, float(os.getenv("MT5_AUTO_TRADING_INTERVAL_SECONDS", "5")))
 
 
+def _sync_live_trading_state(loop: LiveTradingLoop) -> None:
+    """Persist a fail-closed loop stop so Streamlit cannot recreate it on rerun."""
+    if loop.active or not st.session_state.get("trading_active", False):
+        return
+    st.session_state.trading_active = False
+    _persist_auto_trading_state(False)
+
+
 @st.fragment(
     run_every=_live_trading_fragment_interval(
         bool(st.session_state.get("trading_active", False))
@@ -1886,9 +1894,7 @@ def _run_continuous_live_trading() -> None:
     loop = st.session_state.live_trading_loop
     try:
         cycle = loop.run_once()
-        if loop.last_status == "authorization_expired":
-            st.session_state.trading_active = False
-            _persist_auto_trading_state(False)
+        _sync_live_trading_state(loop)
         if cycle is not None:
             st.session_state.live_signal_cycle = cycle
             st.session_state.live_signals = cycle.signal_details

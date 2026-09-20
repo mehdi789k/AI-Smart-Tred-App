@@ -33,9 +33,9 @@
     ],
     "present": true
   },
-  "newest": "2026-09-20T05:15:00+00:00",
+  "newest": "2026-09-20T06:00:00+00:00",
   "ohlc_valid": true,
-  "oldest": "2026-08-16T11:55:00+00:00",
+  "oldest": "2026-08-16T12:40:00+00:00",
   "source": "json",
   "status": "accepted",
   "symbol": "ZECUSD_l",

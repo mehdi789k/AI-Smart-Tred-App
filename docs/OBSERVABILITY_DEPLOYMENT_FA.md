@@ -64,6 +64,15 @@ py -3.12 -m src.python.data.main --health
 watchdog در صورت heartbeat stale یا وضعیت غیر `running`، task اصلی را با
 `Start-ScheduledTask` دوباره اجرا می‌کند و exit code غیرصفر برمی‌گرداند.
 
+برای Dashboard محلی نیز
+[scripts/run_dashboard_watchdog.ps1](../scripts/run_dashboard_watchdog.ps1)
+باید به‌عنوان process پایدار Scheduled Task اجرا شود. این watchdog هم‌زمان
+وجود process صحیح Streamlit و endpoint
+`http://127.0.0.1:8501/_stcore/health` را بررسی می‌کند و در صورت خرابی، startup
+کنترل‌شده را اجرا می‌کند. پس از سه restart ناموفق متوالی fail-closed متوقف می‌شود
+تا خرابی زیرساخت بدون نظارت پنهان نماند. برای بررسی یک‌باره می‌توان از پارامتر
+`-Once` استفاده کرد.
+
 متغیرهای `COLLECTOR_HEALTH_FILE` و `COLLECTOR_LOCK_FILE` برای تغییر این مسیرها
 در محیط‌های مختلف قابل تنظیم هستند. watchdog باید در صورت نبودن فایل health،
 وضعیت `stopped`، یا قدیمی‌شدن `updated_at` نسبت به timeout عملیاتی، task را

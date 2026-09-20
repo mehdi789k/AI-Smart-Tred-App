@@ -2,7 +2,7 @@
   "risk_per_trade": 0.5,
   "max_positions": 5,
   "daily_loss_limit": 1000.0,
-  "daily_loss_reset_at": 1789858781.347223,
+  "daily_loss_reset_at": 1789891978.412376,
   "max_position_volume": 0.01,
   "break_even_enabled": true,
   "break_even_trigger_r": 1.0,
@@ -38,25 +38,15 @@
     "UKBRENT_l": "M5"
   },
   "trading_start": null,
-  "auto_trading_enabled": true,
-  "auto_trading_expires_at": 1789363461.5678456,
+  "auto_trading_enabled": false,
+  "auto_trading_expires_at": 0.0,
   "shadow_trading_enabled": false,
-  "ml_scheduler_symbol": "",
-  "ml_scheduler_timeframe": "H1",
-  "ml_scheduler_pid": 0,
-  "dashboard_page": "ML Predictions",
-  "ml_training_enabled": false,
-  "retrain_schedule": "manual",
+  "ml_scheduler_symbol": "XAUUSD_l",
+  "ml_scheduler_timeframe": "M5",
+  "ml_scheduler_pid": 18328,
+  "dashboard_page": "Overview",
+  "ml_training_enabled": true,
+  "retrain_schedule": "daily",
   "ml_accuracy_threshold": 65.0,
-  "ml_profit_factor_threshold": 1.2,
-  "prediction_model": "RandomForest",
-  "prediction_timeframe": "M5",
-  "prediction_symbols": [
-    "XAUUSD_l",
-    "DSHUSD_l",
-    "TRXUSD_l",
-    "XRPUSD_l",
-    "ZECUSD_l",
-    "UKBRENT_l"
-  ]
+  "ml_profit_factor_threshold": 1.2
 }

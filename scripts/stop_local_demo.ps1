@@ -2,9 +2,13 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $dashboardPidFile = Join-Path $projectRoot "logs\dashboard_windows.pid"
-$taskName = "SmartMT5 Local Demo ReadOnly"
+$taskName = "SmartMT5 Local Demo"
 
-& schtasks.exe /End /TN $taskName 2>$null
+try {
+    & schtasks.exe /End /TN $taskName 2>$null
+} catch {
+    # The scheduled task is optional; continue stopping local processes.
+}
 
 if (Test-Path -LiteralPath $dashboardPidFile) {
     $dashboardPid = Get-Content -LiteralPath $dashboardPidFile -Raw

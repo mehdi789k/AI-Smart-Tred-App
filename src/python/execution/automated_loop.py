@@ -345,6 +345,17 @@ class LiveTradingLoop:
             return None
         result = self.trader.run_cycle(market_data, prices)
         self.last_result = result
+        if self._broker_disabled_trading(result):
+            log_event(
+                logger,
+                logging.ERROR,
+                "broker_trading_disabled",
+                cycle_id=cycle_id,
+                symbols=sorted(self.trader.config.symbols),
+            )
+            self.stop()
+            self.last_status = "broker_trading_disabled"
+            return result
         self.last_status = (
             "signals_detected_orders_blocked"
             if result.signals_generated and not result.orders_executed
@@ -363,6 +374,16 @@ class LiveTradingLoop:
             status=self.last_status,
         )
         return result
+
+    @staticmethod
+    def _broker_disabled_trading(result: TradingCycle) -> bool:
+        """Stop retries when the broker has disabled client or server trading."""
+
+        non_retryable_retcodes = ("10017", "10026", "10027")
+        return any(
+            any(f"retcode {retcode}" in error.lower() for retcode in non_retryable_retcodes)
+            for error in result.errors
+        )
 
 
 class ShadowTradingLoop:

@@ -1,10 +1,12 @@
 import time
+from datetime import datetime
 from types import SimpleNamespace
 
 import pandas as pd
 import pytest
 
 from src.python.execution import AutoTrader, LiveTradingLoop, TradingConfig
+from src.python.execution.auto_trader import TradingCycle
 from src.python.execution.live_order_workflow import (
     LiveOrderConfig,
     LiveOrderRejected,
@@ -203,6 +205,26 @@ def test_loop_fetches_each_symbol_with_its_configured_timeframe(monkeypatch):
     loop.restore_active()
     assert loop.run_once() is None
     assert calls == [(["EURUSD"], "M5"), (["GBPUSD"], "H1")]
+
+
+def test_loop_stops_after_broker_disables_trading(monkeypatch):
+    monkeypatch.setenv("MT5_AUTO_TRADING_ENABLED", "true")
+    loop, workflow = make_loop()
+    workflow.restore_automation_authorization(time.time() + 30)
+    loop.restore_active()
+    loop.data_provider = lambda *_: ({"EURUSD": {"close": 110.0}}, {"EURUSD": 110.0})
+    loop.trader.run_cycle = lambda *_: loop.trader.cycle_history.append(
+        TradingCycle(
+            timestamp=datetime.now(),
+            signals_generated=1,
+            errors=["Order failed for EURUSD: MT5 error: retcode 10017"],
+        )
+    ) or loop.trader.cycle_history[-1]
+
+    loop.run_once()
+
+    assert loop.active is False
+    assert loop.last_status == "broker_trading_disabled"
 
 
 def test_live_loop_moves_managed_buy_stop_to_break_even(monkeypatch):
