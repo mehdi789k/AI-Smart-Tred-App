@@ -1,0 +1,29 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements/lock/dashboard.txt /tmp/requirements.txt
+ENV PIP_INDEX_URL=https://pypi.org/simple
+ENV PIP_CONFIG_FILE=/dev/null
+ENV PIP_REQUIRE_HASHES=0
+RUN pip install --no-cache-dir --disable-pip-version-check -r /tmp/requirements.txt
+
+COPY src/python ./src/python
+COPY market_data ./market_data
+COPY models ./models
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+ENV MT5_ENABLED=false
+ENV MT5_DASHBOARD_DIRECT=false
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "src/python/dashboard/app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.headless=true"]

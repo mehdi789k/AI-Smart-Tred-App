@@ -1,0 +1,12 @@
+SQLAlchemy==2.0.36
+alembic==1.19.2
+asyncpg==0.30.0
+aiosqlite==0.20.0
+numpy==1.26.4
+pandas==2.2.3
+prometheus-client==0.22.1
+scikit-learn==1.5.2
+fastapi==0.116.1
+starlette==0.47.3
+uvicorn[standard]==0.34.0
+pyzmq==26.2.1

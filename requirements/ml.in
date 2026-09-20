@@ -1,0 +1,9 @@
+# Runtime dependencies for the default CPU ML training image.
+SQLAlchemy==2.0.36
+aiosqlite==0.20.0
+asyncpg==0.30.0
+numpy==1.26.4
+pandas==2.2.3
+scikit-learn==1.5.2
+joblib==1.6.0
+python-dotenv==1.2.3

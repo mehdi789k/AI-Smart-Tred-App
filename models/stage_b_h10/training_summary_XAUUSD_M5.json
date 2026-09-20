@@ -1,0 +1,189 @@
+{
+  "symbol": "XAUUSD",
+  "timeframe": "M5",
+  "training_date": "2026-09-12T03:03:51.529621",
+  "n_samples": 30000,
+  "n_features": 47,
+  "features": [
+    "return_1",
+    "return_5",
+    "return_10",
+    "volatility_10",
+    "volatility_20",
+    "high_low_range",
+    "close_position",
+    "sma_20",
+    "sma_50",
+    "price_vs_sma20",
+    "price_vs_sma50",
+    "sma20_vs_sma50",
+    "rsi",
+    "rsi_ma5",
+    "rsi_deviation",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_middle",
+    "bb_std",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "bb_position",
+    "atr",
+    "atr_normalized",
+    "adx",
+    "plus_di",
+    "minus_di",
+    "di_diff",
+    "stoch_k",
+    "stoch_d",
+    "volume_ma10",
+    "volume_ratio",
+    "volume_spike",
+    "swing_high",
+    "swing_low",
+    "dist_from_swing_high",
+    "dist_from_swing_low",
+    "body_size",
+    "body_ratio",
+    "upper_shadow",
+    "lower_shadow",
+    "candle_direction",
+    "is_doji",
+    "engulfing",
+    "prev_body"
+  ],
+  "label_diagnostics": {
+    "samples": 29949,
+    "counts": {
+      "SELL": 17658,
+      "HOLD": 5082,
+      "BUY": 7209
+    },
+    "percentages": {
+      "SELL": 0.5896023239507162,
+      "HOLD": 0.16968847039967946,
+      "BUY": 0.24070920564960432
+    },
+    "hold": {
+      "warning": false,
+      "reason_counts": {
+        "time_barrier": 5072,
+        "time_cutoff": 10
+      }
+    },
+    "monthly": {
+      "2026-04": {
+        "samples": 3667,
+        "SELL": 2158,
+        "HOLD": 648,
+        "BUY": 861,
+        "HOLD_pct": 0.17671120807199345
+      },
+      "2026-05": {
+        "samples": 5756,
+        "SELL": 3515,
+        "HOLD": 896,
+        "BUY": 1345,
+        "HOLD_pct": 0.1556636553161918
+      },
+      "2026-06": {
+        "samples": 6018,
+        "SELL": 3591,
+        "HOLD": 1095,
+        "BUY": 1332,
+        "HOLD_pct": 0.18195413758723827
+      },
+      "2026-07": {
+        "samples": 6296,
+        "SELL": 3702,
+        "HOLD": 1087,
+        "BUY": 1507,
+        "HOLD_pct": 0.17264930114358323
+      },
+      "2026-08": {
+        "samples": 5791,
+        "SELL": 3230,
+        "HOLD": 965,
+        "BUY": 1596,
+        "HOLD_pct": 0.16663788637541013
+      },
+      "2026-09": {
+        "samples": 2421,
+        "SELL": 1462,
+        "HOLD": 391,
+        "BUY": 568,
+        "HOLD_pct": 0.16150351094589013
+      }
+    }
+  },
+  "class_weight_strategy": "balanced",
+  "class_weights": {
+    "0": 0.5583965907577574,
+    "1": 1.940664630195316,
+    "2": 1.4411906234962535
+  },
+  "metrics": {
+    "random_forest": {
+      "accuracy": 0.5158058771148709,
+      "precision_macro": 0.4371391746935278,
+      "recall_macro": 0.44194602372189634,
+      "f1_macro": 0.43603964653685545,
+      "confusion_matrix": [
+        [
+          1697,
+          483,
+          447
+        ],
+        [
+          326,
+          266,
+          123
+        ],
+        [
+          597,
+          199,
+          354
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "SELL",
+        "HOLD",
+        "BUY"
+      ],
+      "classification_report": {
+        "SELL": {
+          "precision": 0.6477099236641222,
+          "recall": 0.6459840121811953,
+          "f1-score": 0.6468458166571374,
+          "support": 2627.0
+        },
+        "HOLD": {
+          "precision": 0.2805907172995781,
+          "recall": 0.37202797202797205,
+          "f1-score": 0.3199037883343355,
+          "support": 715.0
+        },
+        "BUY": {
+          "precision": 0.38311688311688313,
+          "recall": 0.30782608695652175,
+          "f1-score": 0.3413693346190935,
+          "support": 1150.0
+        },
+        "accuracy": 0.5158058771148709,
+        "macro avg": {
+          "precision": 0.4371391746935278,
+          "recall": 0.44194602372189634,
+          "f1-score": 0.43603964653685545,
+          "support": 4492.0
+        },
+        "weighted avg": {
+          "precision": 0.5215362306142615,
+          "recall": 0.5158058771148709,
+          "f1-score": 0.5166006019210391,
+          "support": 4492.0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "fixture_name": "zmq_contract_v1.json",
+  "schema_version": "1.0",
+  "case_count": 12,
+  "sha256": "551d9ee5d686c15e1ccc814d0403f62ec2435699af1dbad8b6f7fd0d1835a5eb"
+}

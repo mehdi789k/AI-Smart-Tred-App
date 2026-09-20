@@ -1,0 +1,5 @@
+# Test dependencies. The full lock also contains the runtime and ML dependencies
+# used by the repository-wide validation workflow.
+-r full.in
+pytest
+pytest-asyncio

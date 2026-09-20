@@ -1,0 +1,5 @@
+{
+  "signal": "buy",
+  "entry_price": 2500,
+  "take_profit": 2600
+}

@@ -1,0 +1,45 @@
+{
+  "bars": 10000,
+  "coverage_hours": 833.3333333333334,
+  "duplicate_timestamps": 0,
+  "expected_gap_windows": [
+    "23:55-01:05"
+  ],
+  "expected_gaps": [
+    {
+      "from": "2026-08-23T04:25:00+00:00",
+      "missing_bars": 1,
+      "to": "2026-08-23T04:35:00+00:00"
+    }
+  ],
+  "ingestion_metadata": {
+    "data_dir": "D:\\Nojom mali\\robat metatreder5\\AI Smart Tred App\\market_data",
+    "database_configured": null,
+    "metadata_fields": [],
+    "metadata_present_rows": 0,
+    "metadata_rows": 0,
+    "sources": [
+      "json"
+    ]
+  },
+  "ingestion_metadata_coverage": {
+    "fields": [
+      "data_dir",
+      "database_configured",
+      "metadata_fields",
+      "metadata_present_rows",
+      "metadata_rows",
+      "sources"
+    ],
+    "present": true
+  },
+  "newest": "2026-09-20T03:45:00+00:00",
+  "ohlc_valid": true,
+  "oldest": "2026-08-16T10:25:00+00:00",
+  "source": "json",
+  "status": "accepted",
+  "symbol": "XRPUSD_l",
+  "timeframe": "M5",
+  "timezone_utc": true,
+  "unexpected_gaps": []
+}

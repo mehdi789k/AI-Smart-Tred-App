@@ -1,0 +1,76 @@
+name: Python validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    env:
+      # CI-only placeholders satisfy Compose's required-variable checks.
+      # No credential is used for tests or published by this workflow.
+      POSTGRES_PASSWORD: ci-validation-placeholder
+      API_AUTH_TOKEN: ci-validation-placeholder
+      GRAFANA_ADMIN_PASSWORD: ci-validation-placeholder
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements/lock/full.txt
+      - name: Compile sources and tests
+        run: python -m compileall -q src tests
+      - name: Validate changed Python files
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
+            $diffBase = "origin/$env:GITHUB_BASE_REF"
+          } else {
+            $diffBase = "HEAD^"
+          }
+          if (-not (git rev-parse --verify "$diffBase" 2>$null)) {
+            $diffBase = git rev-list --max-parents=0 HEAD
+          }
+          $changedFiles = @(
+            git diff --name-only "$diffBase" HEAD -- '*.py' |
+              Where-Object { Test-Path $_ }
+          )
+          if ($changedFiles.Count -eq 0) {
+            Write-Host "No changed Python files require quality checks."
+            exit 0
+          }
+          python -m ruff format --check $changedFiles
+          python -m ruff check $changedFiles
+          python -m mypy --follow-imports=skip $changedFiles
+      - name: Run tests
+        run: python -m pytest -q --import-mode=importlib
+      - name: Validate migration history
+        run: python -m alembic upgrade head
+      - name: Validate Docker Compose configuration
+        run: docker compose --profile dashboard config --quiet
+
+  runtime-lock-alignment:
+    runs-on: windows-latest
+    env:
+      # The validator only checks configuration and migrations; these values
+      # are non-secret placeholders for Compose's required-variable checks.
+      POSTGRES_PASSWORD: ci-validation-placeholder
+      API_AUTH_TOKEN: ci-validation-placeholder
+      GRAFANA_ADMIN_PASSWORD: ci-validation-placeholder
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate Python 3.12 runtime and lock alignment
+        shell: pwsh
+        run: |
+          & .\scripts\validate_runtime_lock_alignment.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Runtime/lock alignment validation failed."
+          }

@@ -1,0 +1,52 @@
+{
+  "timestamp": "20260919_044138",
+  "symbol": "ZECUSD_l",
+  "timeframe": "M5",
+  "without_ml": {
+    "total_return": -9999.999999999996,
+    "total_trades": 6579,
+    "winning_trades": 655,
+    "losing_trades": 5924,
+    "win_rate": 0.09955920352637179,
+    "profit_factor": 0.10328538104331556,
+    "max_drawdown": 1.0,
+    "sharpe_ratio": -6.460810314903514,
+    "avg_trade_pnl": -1.5199878400972797,
+    "avg_winner": 1.7585037793824574,
+    "avg_loser": -1.8824814273287493,
+    "largest_winner": 193.96067885117253,
+    "largest_loser": -200.0,
+    "config": {
+      "use_ml": false,
+      "symbol": "ZECUSD_l",
+      "timeframe": "M5",
+      "initial_capital": 10000.0
+    }
+  },
+  "with_ml": {
+    "total_return": -9999.999999999962,
+    "total_trades": 11633,
+    "winning_trades": 1045,
+    "losing_trades": 10588,
+    "win_rate": 0.08983065417347202,
+    "profit_factor": 0.28894964963623554,
+    "max_drawdown": 1.0,
+    "sharpe_ratio": -10.63756266395511,
+    "avg_trade_pnl": -0.8596234849136078,
+    "avg_winner": 3.8887097322391404,
+    "avg_loser": -1.3282680081403386,
+    "largest_winner": 432.6400000000006,
+    "largest_loser": -224.97280000000032,
+    "config": {
+      "use_ml": true,
+      "symbol": "ZECUSD_l",
+      "timeframe": "M5",
+      "initial_capital": 10000.0
+    }
+  },
+  "comparison": {
+    "return_improvement": 3.456079866737127e-11,
+    "win_rate_change": -0.9728549352899768,
+    "pf_change": 0.18566426859291998
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "bars": 1000,
+  "coverage_hours": 83.25,
+  "duplicate_timestamps": 0,
+  "error": "training gate failed: insufficient bars (1000 < 10000)",
+  "expected_gap_windows": [],
+  "expected_gaps": [],
+  "ingestion_metadata": {
+    "data_dir": "D:\\Nojom mali\\robat metatreder5\\AI Smart Tred App\\market_data",
+    "database_configured": null,
+    "metadata_fields": [],
+    "metadata_present_rows": 0,
+    "metadata_rows": 0,
+    "sources": [
+      "json"
+    ]
+  },
+  "ingestion_metadata_coverage": {
+    "fields": [
+      "data_dir",
+      "database_configured",
+      "metadata_fields",
+      "metadata_present_rows",
+      "metadata_rows",
+      "sources"
+    ],
+    "present": true
+  },
+  "newest": "2026-09-19T03:35:00+00:00",
+  "ohlc_valid": false,
+  "oldest": "2026-09-15T16:20:00+00:00",
+  "source": "json",
+  "status": "rejected",
+  "symbol": "DSHUSD_l",
+  "timeframe": "M5",
+  "timezone_utc": true,
+  "unexpected_gaps": []
+}
