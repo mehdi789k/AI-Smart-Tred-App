@@ -5,6 +5,7 @@ Tests all dashboard sections ensuring connection to project modules and real dat
 
 import os
 import sys
+import tempfile
 import unittest
 from datetime import datetime
 from pathlib import Path
@@ -650,9 +651,26 @@ class TestDashboardAppStructure(unittest.TestCase):
 
     def test_latest_training_gate_reads_top_level_quality_report(self):
         """The training page reports rejection details from the newest gate report."""
-        status = dashboard_app._latest_training_gate_status(
-            Path(PROJECT_ROOT) / "models"
-        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            models_dir = root / "models"
+            quality_dir = root / "reports" / "data_quality"
+            models_dir.mkdir(parents=True)
+            quality_dir.mkdir(parents=True)
+            (quality_dir / "newer_raw_report.json").write_text(
+                '{"symbol": "UKBRENT_l", "status": "rejected"}',
+                encoding="utf-8",
+            )
+            (models_dir / "training_summary_DSHUSD_l_M5.json").write_text(
+                (
+                    '{"symbol": "DSHUSD_l", "timeframe": "M5", '
+                    '"training_date": "2026-09-20T04:00:00+00:00", '
+                    '"data_manifest": {"quality": {"status": "rejected"}}}'
+                ),
+                encoding="utf-8",
+            )
+
+            status = dashboard_app._latest_training_gate_status(models_dir)
 
         self.assertEqual(status["status"], "rejected")
         self.assertEqual(status["symbol"], "DSHUSD_l")

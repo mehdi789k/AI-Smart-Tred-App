@@ -2,7 +2,9 @@
   "bars": 10000,
   "coverage_hours": 833.3333333333334,
   "duplicate_timestamps": 0,
-  "expected_gap_windows": [],
+  "expected_gap_windows": [
+    "23:55-01:05"
+  ],
   "expected_gaps": [
     {
       "from": "2026-08-23T04:25:00+00:00",
@@ -31,9 +33,9 @@
     ],
     "present": true
   },
-  "newest": "2026-09-20T03:15:00+00:00",
+  "newest": "2026-09-20T05:15:00+00:00",
   "ohlc_valid": true,
-  "oldest": "2026-08-16T09:55:00+00:00",
+  "oldest": "2026-08-16T11:55:00+00:00",
   "source": "json",
   "status": "accepted",
   "symbol": "ZECUSD_l",

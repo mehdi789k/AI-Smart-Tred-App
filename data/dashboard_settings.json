@@ -52,6 +52,11 @@
   "prediction_model": "RandomForest",
   "prediction_timeframe": "M5",
   "prediction_symbols": [
+    "XAUUSD_l",
+    "DSHUSD_l",
+    "TRXUSD_l",
+    "XRPUSD_l",
+    "ZECUSD_l",
     "UKBRENT_l"
   ]
 }

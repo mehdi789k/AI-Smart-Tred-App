@@ -184,16 +184,40 @@ def _delete_model_artifacts(models_dir: Path, selected_names: list[str]) -> list
 def _latest_training_gate_status(models_dir: Path) -> dict[str, Any]:
     """Return the newest accepted or rejected training-gate record for display."""
 
-    candidates = list(
-        (models_dir.parent / "reports" / "data_quality").glob("**/*.json")
-    )
-    candidates.extend(
+    training_summaries = [
         path for path in models_dir.glob("training_summary_*.json") if path.is_file()
+    ]
+    candidates = training_summaries or list(
+        (models_dir.parent / "reports" / "data_quality").glob("**/*.json")
     )
     if not candidates:
         return {"status": "unknown"}
 
-    latest = max(candidates, key=lambda path: path.stat().st_mtime)
+    if training_summaries:
+        minimum_timestamp = datetime.min.replace(tzinfo=timezone.utc)
+
+        def training_summary_key(path: Path) -> tuple[datetime, float]:
+            try:
+                with path.open(encoding="utf-8") as handle:
+                    training_date = json.load(handle).get("training_date")
+            except (OSError, json.JSONDecodeError) as error:
+                logger.warning("Cannot read training date from %s: %s", path, error)
+                return minimum_timestamp, path.stat().st_mtime
+
+            if not isinstance(training_date, str):
+                return minimum_timestamp, path.stat().st_mtime
+            try:
+                parsed = datetime.fromisoformat(training_date.replace("Z", "+00:00"))
+            except ValueError:
+                logger.warning("Invalid training_date in %s: %s", path, training_date)
+                return minimum_timestamp, path.stat().st_mtime
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            return parsed.astimezone(timezone.utc), path.stat().st_mtime
+
+        latest = max(candidates, key=training_summary_key)
+    else:
+        latest = max(candidates, key=lambda path: path.stat().st_mtime)
     try:
         with latest.open(encoding="utf-8") as handle:
             payload = json.load(handle)
@@ -1242,16 +1266,14 @@ def _sync_selected_market_data(
         (visible_symbols[str(symbol).upper()], str(timeframe), DEFAULT_HISTORY_COUNT)
         for symbol, timeframe in configured_pairs.items()
         if str(symbol).upper() in visible_symbols
-        and str(timeframe).upper()
-        in {"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1"}
+        and str(timeframe).upper() in {"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1"}
     ]
     if additional_subscriptions:
         subscriptions.extend(
             (visible_symbols[symbol.upper()], timeframe.upper(), count)
             for symbol, timeframe, count in additional_subscriptions
             if symbol.upper() in visible_symbols
-            and timeframe.upper()
-            in {"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1"}
+            and timeframe.upper() in {"M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1"}
             and count > 0
         )
         subscriptions = list(dict.fromkeys(subscriptions))
