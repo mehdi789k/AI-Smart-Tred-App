@@ -220,13 +220,16 @@ def test_loop_stops_after_broker_disables_trading(monkeypatch):
     workflow.restore_automation_authorization(time.time() + 30)
     loop.restore_active()
     loop.data_provider = lambda *_: ({"EURUSD": {"close": 110.0}}, {"EURUSD": 110.0})
-    loop.trader.run_cycle = lambda *_: loop.trader.cycle_history.append(
-        TradingCycle(
-            timestamp=datetime.now(),
-            signals_generated=1,
-            errors=["Order failed for EURUSD: MT5 error: retcode 10017"],
+    loop.trader.run_cycle = lambda *_: (
+        loop.trader.cycle_history.append(
+            TradingCycle(
+                timestamp=datetime.now(),
+                signals_generated=1,
+                errors=["Order failed for EURUSD: MT5 error: retcode 10017"],
+            )
         )
-    ) or loop.trader.cycle_history[-1]
+        or loop.trader.cycle_history[-1]
+    )
 
     loop.run_once()
 
@@ -240,13 +243,18 @@ def test_loop_stops_after_broker_disabled_order_error_format(monkeypatch):
     workflow.restore_automation_authorization(time.time() + 30)
     loop.restore_active()
     loop.data_provider = lambda *_: ({"EURUSD": {"close": 110.0}}, {"EURUSD": 110.0})
-    loop.trader.run_cycle = lambda *_: loop.trader.cycle_history.append(
-        TradingCycle(
-            timestamp=datetime.now(),
-            signals_generated=1,
-            errors=["Live execution error: MT5 rejected order (10017): Trade disabled"],
+    loop.trader.run_cycle = lambda *_: (
+        loop.trader.cycle_history.append(
+            TradingCycle(
+                timestamp=datetime.now(),
+                signals_generated=1,
+                errors=[
+                    "Live execution error: MT5 rejected order (10017): Trade disabled"
+                ],
+            )
         )
-    ) or loop.trader.cycle_history[-1]
+        or loop.trader.cycle_history[-1]
+    )
 
     loop.run_once()
 
@@ -260,14 +268,20 @@ def test_broker_disable_latches_all_live_loop_instances(monkeypatch):
     first_loop, first_workflow = make_loop()
     first_workflow.restore_automation_authorization(time.time() + 30)
     first_loop.restore_active()
-    first_loop.data_provider = lambda *_: ({"EURUSD": {"close": 110.0}}, {"EURUSD": 110.0})
-    first_loop.trader.run_cycle = lambda *_: first_loop.trader.cycle_history.append(
-        TradingCycle(
-            timestamp=datetime.now(),
-            signals_generated=1,
-            errors=["MT5 rejected order (10017): Trade disabled"],
+    first_loop.data_provider = lambda *_: (
+        {"EURUSD": {"close": 110.0}},
+        {"EURUSD": 110.0},
+    )
+    first_loop.trader.run_cycle = lambda *_: (
+        first_loop.trader.cycle_history.append(
+            TradingCycle(
+                timestamp=datetime.now(),
+                signals_generated=1,
+                errors=["MT5 rejected order (10017): Trade disabled"],
+            )
         )
-    ) or first_loop.trader.cycle_history[-1]
+        or first_loop.trader.cycle_history[-1]
+    )
 
     first_loop.run_once()
 

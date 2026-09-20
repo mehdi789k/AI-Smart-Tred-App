@@ -203,10 +203,9 @@ def save_candle_records(
     )
     if existing is None:
         existing = _read_candles([canonical_path, *duplicate_paths])
+
     def normalize(record: dict[str, object]) -> dict[str, object]:
-        normalized = {
-            key: _json_value(value) for key, value in record.items()
-        }
+        normalized = {key: _json_value(value) for key, value in record.items()}
         if not normalized.get("time_iso"):
             normalized["time_iso"] = datetime.fromtimestamp(
                 float(normalized["time"]), timezone.utc
