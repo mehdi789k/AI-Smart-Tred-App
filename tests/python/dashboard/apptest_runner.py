@@ -1,11 +1,9 @@
-import sys
 import json
-from pathlib import Path
+import sys
 
 # Small helper script to run a Streamlit AppTest in a subprocess and emit JSON
 # This isolates thread/cleanup-related KeyboardInterrupts that can crash the test
 # runner process executing pytest.
-
 from streamlit.testing.v1 import AppTest
 
 
@@ -18,8 +16,8 @@ def main():
     timeout = int(sys.argv[2])
     page = sys.argv[3] if len(sys.argv) > 3 else None
 
-    import io
     import contextlib
+    import io
 
     pages = []
 

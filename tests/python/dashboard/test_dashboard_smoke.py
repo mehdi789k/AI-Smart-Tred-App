@@ -1,10 +1,11 @@
 """Read-only Streamlit smoke tests for every dashboard navigation page."""
 
-import os
-import sys
 import json
+import os
 import subprocess
+import sys
 from pathlib import Path
+
 import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
