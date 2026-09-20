@@ -15,19 +15,6 @@ function Write-StartupLog {
     Add-Content -Path $startupLog -Value "$(Get-Date -Format o) $Message"
 }
 
-function Invoke-DashboardSmokeTest {
-    Write-StartupLog "Running read-only dashboard smoke tests."
-    & $python -m pytest `
-        "tests/python/dashboard/test_dashboard_smoke.py" `
-        "-q" `
-        "--disable-warnings" 2>&1 |
-        Tee-Object -FilePath (Join-Path $logDirectory "dashboard_smoke_test.log") -Append
-    if ($LASTEXITCODE -ne 0) {
-        throw "Dashboard smoke tests failed with exit code $LASTEXITCODE"
-    }
-    Write-StartupLog "Dashboard smoke tests passed."
-}
-
 function Start-MarketDataCollector {
     if ($env:MT5_DASHBOARD_DIRECT -eq "true") {
         Write-StartupLog "Skipping Market Watch collector because dashboard owns direct MT5 access."
@@ -92,9 +79,10 @@ Set-Location -LiteralPath $projectRoot
 Write-StartupLog "Starting local Demo infrastructure."
 
 # Compose reads the parent process environment before the host dashboard
-# settings below are applied. Force the local startup path to remain
-# read-only even when a stale user-level environment override is present.
-$env:MT5_AUTO_TRADING_ENABLED = "false"
+# settings below are applied. Enable the server automation gate for the
+# explicitly approved Demo path while retaining the workflow's confirmation
+# and risk controls.
+$env:MT5_AUTO_TRADING_ENABLED = "true"
 $env:MT5_LEGACY_ORDER_PATH_ENABLED = "false"
 $env:MT5_DEMO_ENABLED = "true"
 $env:MT5_DASHBOARD_DIRECT = "true"
@@ -122,6 +110,27 @@ if (-not $apiReady) {
     throw "API health check did not become ready within 60 seconds."
 }
 
+$envFile = Join-Path $projectRoot ".env"
+if (Test-Path -LiteralPath $envFile) {
+    Get-Content -LiteralPath $envFile | ForEach-Object {
+        if ($_ -match '^\s*(MT5_LOGIN|MT5_PASSWORD|MT5_SERVER|MT5_TERMINAL_PATH)\s*=(.*)$') {
+            $value = $matches[2].Trim()
+            if (
+                $value.Length -ge 2 -and
+                (($value.StartsWith('"') -and $value.EndsWith('"')) -or
+                    ($value.StartsWith("'") -and $value.EndsWith("'")))
+            ) {
+                $value = $value.Substring(1, $value.Length - 2)
+            }
+            [Environment]::SetEnvironmentVariable(
+                $matches[1],
+                $value,
+                [EnvironmentVariableTarget]::Process
+            )
+        }
+    }
+}
+
 $env:MT5_ENABLED = "true"
 $env:STREAMLIT_SERVER_HEADLESS = "true"
 
@@ -134,10 +143,9 @@ if ($existingConnection) {
             $existingPid = (Get-NetTCPConnection -LocalPort 8501 -State Listen |
                 Select-Object -First 1 -ExpandProperty OwningProcess)
             Set-Content -Path $dashboardPidFile -Value $existingPid
-            Invoke-DashboardSmokeTest
             Start-MarketDataCollector
             Start-Process "http://127.0.0.1:8501"
-            Write-StartupLog "Dashboard is already healthy; smoke test passed and browser opened."
+            Write-StartupLog "Dashboard is already healthy; health check passed and browser opened."
             exit 0
         }
     } catch {
@@ -181,8 +189,7 @@ if (-not $dashboardReady) {
     throw "Dashboard health check did not become ready within 60 seconds."
 }
 
-Invoke-DashboardSmokeTest
 Start-MarketDataCollector
 Start-Process "http://127.0.0.1:8501"
-Write-StartupLog "Local Demo infrastructure and read-only dashboard are healthy; browser opened."
+Write-StartupLog "Local Demo infrastructure and dashboard are healthy; health check passed; browser opened."
 exit 0

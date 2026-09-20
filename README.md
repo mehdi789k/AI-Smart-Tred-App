@@ -220,6 +220,12 @@ credential، تأیید دستی و evidence عملیاتی جداگانه نی�
 | `ZMQ_EXECUTION_ENDPOINT` | endpoint ارتباط با EA | `tcp://127.0.0.1:5555` |
 | `SHADOW_LEDGER_PATH` | ledger حالت shadow | `data/shadow_orders.jsonl` |
 
+اسکریپت `scripts/start_local_demo.ps1` برای حساب Demo محلی، گیت
+`MT5_AUTO_TRADING_ENABLED=true` را فعال می‌کند؛ این override فقط در مسیر Demo
+است و تأیید دستی، whitelist نماد، سقف حجم، سقف زیان روزانه و circuit breaker
+همچنان الزامی هستند. مقدار امن پیش‌فرض در `.env.example` برای سایر مسیرها
+همچنان `false` باقی می‌ماند.
+
 ## نکات توسعه
 
 - اندیکاتورها و فیلترها باید pure و بدون side effect معاملاتی باقی بمانند.

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="3" errors="0" failures="0" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2026-09-20" time="16:17:56">
+  <environment nunit-version="2.5.8.0" platform="Microsoft Windows 11 Enterprise|C:\WINDOWS|\Device\Harddisk0\Partition3" os-version="10.0.26200" cwd="D:\Nojom mali\robat metatreder5\AI Smart Tred App" user="Mehdi-karimiyan" machine-name="DESKTOP-BGRBCGM" clr-version="" user-domain="DESKTOP-BGRBCGM" />
+  <culture-info current-culture="en-US" current-uiculture="en-US" />
+  <test-suite type="Powershell" name="Pester" executed="True" result="Success" success="True" time="0.5898" asserts="0">
+    <results>
+      <test-suite type="TestFixture" name="Dashboard watchdog scripts" executed="True" result="Success" success="True" time="0.5898" asserts="0" description="Dashboard watchdog scripts">
+        <results>
+          <test-case description="has valid PowerShell syntax" name="Dashboard watchdog scripts.has valid PowerShell syntax" time="0.4397" asserts="0" success="True" result="Success" executed="True" />
+          <test-case description="checks both the process and Streamlit health endpoint" name="Dashboard watchdog scripts.checks both the process and Streamlit health endpoint" time="0.0683" asserts="0" success="True" result="Success" executed="True" />
+          <test-case description="does not run the unstable AppTest suite during startup" name="Dashboard watchdog scripts.does not run the unstable AppTest suite during startup" time="0.0818" asserts="0" success="True" result="Success" executed="True" />
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>

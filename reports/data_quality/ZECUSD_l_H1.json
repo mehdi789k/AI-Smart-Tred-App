@@ -2,7 +2,9 @@
   "bars": 10000,
   "coverage_hours": 9999.0,
   "duplicate_timestamps": 0,
-  "expected_gap_windows": [],
+  "expected_gap_windows": [
+    "23:55-01:05"
+  ],
   "expected_gaps": [],
   "ingestion_metadata": {
     "data_dir": "D:\\Nojom mali\\robat metatreder5\\AI Smart Tred App\\market_data",
@@ -25,9 +27,9 @@
     ],
     "present": true
   },
-  "newest": "2026-09-20T03:00:00+00:00",
+  "newest": "2026-09-20T05:00:00+00:00",
   "ohlc_valid": true,
-  "oldest": "2025-07-30T12:00:00+00:00",
+  "oldest": "2025-07-30T14:00:00+00:00",
   "source": "json",
   "status": "accepted",
   "symbol": "ZECUSD_l",

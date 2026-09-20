@@ -2,7 +2,7 @@
   "symbol": "UKBRENT_l",
   "timeframe": "M5",
   "requested_candles": 10000,
-  "updated_at": "2026-09-20T02:15:30.412859+00:00",
+  "updated_at": "2026-09-20T09:13:51.085432+00:00",
   "candles": [
     {
       "time": 1785183000,

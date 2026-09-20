@@ -14,7 +14,8 @@
   باید alert عملیاتی ایجاد کند.
 - `http_request_duration_seconds_count` و `_sum`: latency تجمیعی
 - eventهای `mt5_disconnected`, `positions_unavailable`,
-  `automation_authorization_expired` در `logs/smart_events.json`
+  `automation_authorization_expired` و `broker_trading_disabled` در
+  `logs/smart_events.json`
 - رویدادهای audit فعال‌سازی/غیرفعال‌سازی Demo در
   `logs/trading_audit.jsonl`
 
@@ -41,6 +42,13 @@
    نبود position نیست.
 6. پس از رفع مشکل، ابتدا Shadow Mode را اجرا کنید، سپس فقط در demo با
    confirmation جدید فعال کنید.
+
+اگر broker کدهای 10017، 10026 یا 10027 را برگرداند، loop خودکار همان چرخه
+متوقف می‌شود و event `broker_trading_disabled` ثبت می‌گردد؛ این توقف fail-closed
+است و Dashboard نیز وضعیت اجرای خودکار را غیرفعال و lease را باطل می‌کند تا
+در rerun بعدی Streamlit سفارش جدیدی نسازد. برای ادامه باید وضعیت AutoTrading در
+terminal/server بررسی و با confirmation جدید فعال‌سازی شود. این کدها نباید با
+retry مداوم نادیده گرفته شوند.
 
 ## فعال‌کردن Circuit Breaker
 
