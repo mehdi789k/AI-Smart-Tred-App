@@ -83,9 +83,9 @@ def validate_live_readiness(
 
     try:
         visible_symbols = {
-            str(item.get("symbol", "")).upper()
+            str(item.get("symbol", item.get("name", ""))).upper()
             for item in connector.get_symbols_list(visible_only=True)
-            if isinstance(item, dict) and item.get("symbol")
+            if isinstance(item, dict) and item.get("symbol", item.get("name"))
         }
     except (AttributeError, OSError, RuntimeError, TypeError, ValueError):
         visible_symbols = set()
@@ -105,7 +105,7 @@ def validate_live_readiness(
             continue
         symbols[normalized] = {
             key: info[key]
-            for key in ("bid", "ask", "spread", "timestamp")
+            for key in ("bid", "ask", "spread", "timestamp", "last_update")
             if key in info
         }
         bid, ask = info.get("bid"), info.get("ask")
@@ -119,7 +119,7 @@ def validate_live_readiness(
             or ask < bid
         ):
             reasons.append(f"{normalized}:invalid_tick")
-        timestamp = _as_utc(info.get("timestamp"))
+        timestamp = _as_utc(info.get("timestamp", info.get("last_update")))
         if timestamp is None:
             reasons.append(f"{normalized}:tick_timestamp_unavailable")
         elif (
