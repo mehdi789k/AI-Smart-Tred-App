@@ -32,6 +32,7 @@ from ..logging_config import (
     new_correlation_id,
 )
 from ..observability import AlertManager, MetricsRegistry
+from ..risk.circuit_breaker import CircuitBreaker
 from .auth import (
     EMERGENCY_STOP,
     ORDER_REVIEW,
@@ -131,6 +132,12 @@ def create_app(
     runtime_workflow = live_workflow
     runtime_mt5 = mt5_connection
     runtime_circuit_breaker = circuit_breaker
+    live_mode_enabled = os.getenv("MT5_AUTO_TRADING_ENABLED", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
     is_production = (
         production_mode
         if production_mode is not None
@@ -193,6 +200,7 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
+        nonlocal runtime_circuit_breaker
         try:
             if is_production:
                 verify_schema = getattr(runtime_database, "verify_schema", None)
@@ -237,6 +245,33 @@ def create_app(
                         )
                     except (OSError, RuntimeError, TypeError, ValueError):
                         logger.exception("mt5_runtime_connect_failed")
+            if live_mode_enabled and runtime_circuit_breaker is None:
+                try:
+                    if runtime_mt5 is None or not bool(runtime_mt5.is_connected()):
+                        raise RuntimeError("MT5 is not connected for live risk setup")
+                    account = runtime_mt5.get_account_summary()
+                    capital = float(account.get("equity") or account.get("balance") or 0)
+                    if capital <= 0:
+                        raise ValueError("MT5 account equity must be positive")
+                    history = runtime_mt5.get_history(days=1)
+                    if hasattr(history, "to_dict"):
+                        history = history.to_dict(orient="records")
+                    trades = []
+                    for trade in history or []:
+                        row = dict(trade)
+                        if "pnl" not in row and "profit" in row:
+                            row["pnl"] = row["profit"]
+                        trades.append(row)
+                    runtime_circuit_breaker = CircuitBreaker(
+                        capital,
+                        max_daily_loss_percent=float(
+                            os.getenv("MT5_MAX_DAILY_LOSS_PERCENT", "2")
+                        ),
+                    )
+                    runtime_circuit_breaker.evaluate(trades)
+                except (AttributeError, OSError, RuntimeError, TypeError, ValueError):
+                    logger.exception("live_circuit_breaker_initialization_failed")
+                    runtime_circuit_breaker = None
             yield
         finally:
             if mt5_connected_by_lifespan:
@@ -353,6 +388,10 @@ def create_app(
             metrics.set_gauge("circuit_breaker_tripped", int(tripped))
         else:
             metrics.set_gauge("circuit_breaker_configured", 0)
+        if live_mode_enabled and dependency_status["circuit_breaker"] == "not_configured":
+            raise HTTPException(status_code=503, detail="circuit_breaker_unavailable")
+        if live_mode_enabled and dependency_status["mt5"] == "unavailable":
+            raise HTTPException(status_code=503, detail="mt5_unavailable")
         return {
             "data": {
                 "status": "ready",
