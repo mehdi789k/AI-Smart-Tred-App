@@ -25,6 +25,38 @@ logger = logging.getLogger(__name__)
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
+def normalize_mt5_trade_mode(value: Any, *, mt5_module: Any = None) -> str | None:
+    """Return a redacted account mode only when MT5 identifies it explicitly."""
+
+    if mt5_module is not None:
+        for name, normalized in (
+            ("ACCOUNT_TRADE_MODE_DEMO", "demo"),
+            ("TRADE_MODE_DEMO", "demo"),
+            ("ACCOUNT_TRADE_MODE_CONTEST", "contest"),
+            ("TRADE_MODE_CONTEST", "contest"),
+            ("ACCOUNT_TRADE_MODE_REAL", "real"),
+            ("TRADE_MODE_REAL", "real"),
+        ):
+            constant = getattr(mt5_module, name, None)
+            if constant is not None and value == constant:
+                return normalized
+    if isinstance(value, str):
+        normalized_value = value.strip().lower().replace("-", "_").replace(" ", "_")
+        aliases = {
+            "demo": "demo",
+            "trade_mode_demo": "demo",
+            "account_trade_mode_demo": "demo",
+            "contest": "contest",
+            "trade_mode_contest": "contest",
+            "account_trade_mode_contest": "contest",
+            "real": "real",
+            "trade_mode_real": "real",
+            "account_trade_mode_real": "real",
+        }
+        return aliases.get(normalized_value)
+    return None
+
+
 def _serialize_mt5_call(method):
     """Serialize native MT5 calls because the package is not thread-safe."""
 
@@ -242,6 +274,10 @@ class MT5Connection:
             return {
                 "login": account.login,
                 "server": account.server,
+                "trade_mode": normalize_mt5_trade_mode(
+                    getattr(account, "trade_mode", None),
+                    mt5_module=self._mt5,
+                ),
                 "balance": float(account.balance),
                 "equity": float(account.equity),
                 "margin": float(account.margin),
@@ -259,6 +295,22 @@ class MT5Connection:
                 "connected": False,
                 "error": "MT5 account information could not be read",
             }
+
+    @_serialize_mt5_call
+    def is_demo_account(self) -> bool:
+        """Return true only when the connected account has explicit demo mode."""
+
+        try:
+            summary = self.get_account_summary()
+            return (
+                normalize_mt5_trade_mode(
+                    summary.get("trade_mode"),
+                    mt5_module=self._mt5,
+                )
+                == "demo"
+            )
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError):
+            return False
 
     @_serialize_mt5_call
     def get_positions(self) -> pd.DataFrame:
