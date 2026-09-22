@@ -36,3 +36,22 @@ def test_live_trading_fragment_clears_session_after_loop_stops(monkeypatch):
 
     assert dashboard_app.st.session_state.trading_active is False
     assert persisted_states == [False]
+
+
+def test_persisted_auto_trading_requires_connected_demo_connector(monkeypatch):
+    """Auto-trading restore must fail closed without an explicit Demo account."""
+    class Connector:
+        def __init__(self, connected, demo):
+            self.connected = connected
+            self.demo = demo
+
+        def is_connected(self):
+            return self.connected
+
+        def is_demo_account(self):
+            return self.demo
+
+    monkeypatch.setattr(dashboard_app, "mt5_connector", Connector(True, False))
+    assert dashboard_app._active_demo_connector() is False
+    monkeypatch.setattr(dashboard_app, "mt5_connector", Connector(True, True))
+    assert dashboard_app._active_demo_connector() is True

@@ -16,6 +16,9 @@ class FakeConnector:
     def get_account_summary(self):
         return {"connected": self.connected, **self.account}
 
+    def is_demo_account(self):
+        return self.account.get("trade_mode") == "demo"
+
     def get_symbols_list(self, visible_only=True):
         return [{"symbol": symbol} for symbol in self.visible]
 
@@ -135,3 +138,40 @@ def test_readiness_account_identity_is_redacted_to_known_fields():
     )
     assert report.account["trade_mode"] == "demo"
     assert "password" not in report.account
+
+
+def test_readiness_rejects_invisible_symbol():
+    now = datetime.now(timezone.utc)
+    connector = valid_connector(now)
+    connector.visible = set()
+
+    report = validate_live_readiness(
+        connector,
+        expected_login=123,
+        expected_server="LiveBroker",
+        allowed_symbols=frozenset({"XAUUSD"}),
+        now=now,
+    )
+
+    assert report.ready is False
+    assert "XAUUSD:symbol_not_visible" in report.reasons
+
+
+def test_readiness_rejects_malformed_non_positive_and_reversed_prices():
+    now = datetime.now(timezone.utc)
+    for bid, ask in (
+        ("bad", 100.2),
+        (0.0, 100.2),
+        (100.2, 100.0),
+    ):
+        connector = valid_connector(now)
+        connector.symbols["XAUUSD"].update(bid=bid, ask=ask)
+        report = validate_live_readiness(
+            connector,
+            expected_login=123,
+            expected_server="LiveBroker",
+            allowed_symbols=frozenset({"XAUUSD"}),
+            now=now,
+        )
+        assert report.ready is False
+        assert "XAUUSD:invalid_tick" in report.reasons

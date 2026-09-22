@@ -71,13 +71,16 @@ def validate_live_readiness(
     if not isinstance(raw_account, dict) or raw_account.get("connected") is False:
         reasons.append("account_unavailable")
     else:
-        trade_mode = raw_account.get("trade_mode")
+        try:
+            demo_account = bool(connector.is_demo_account())
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError):
+            demo_account = False
+        trade_mode = "demo" if demo_account else "unknown"
         account = {
             key: raw_account[key]
             for key in (
                 "login",
                 "server",
-                "trade_mode",
                 "currency",
                 "leverage",
                 "balance",
@@ -85,7 +88,8 @@ def validate_live_readiness(
             )
             if key in raw_account
         }
-        if trade_mode != "demo":
+        account["trade_mode"] = trade_mode
+        if not demo_account:
             reasons.append("account_not_demo")
         if raw_account.get("login") != expected_login:
             reasons.append("account_login_mismatch")

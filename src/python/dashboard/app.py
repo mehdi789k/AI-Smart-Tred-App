@@ -124,6 +124,18 @@ data_manager = _get_dashboard_data_manager()
 mt5_connector = _get_mt5_connector()
 
 
+def _active_demo_connector() -> bool:
+    """Return true only for a connected connector explicitly identified as Demo."""
+    if mt5_connector is None:
+        return False
+    try:
+        return bool(
+            mt5_connector.is_connected() and mt5_connector.is_demo_account()
+        )
+    except (AttributeError, OSError, RuntimeError, TypeError, ValueError):
+        return False
+
+
 _market_watch_process: subprocess.Popen[bytes] | None = None
 _market_watch_log_handle = None
 
@@ -1382,6 +1394,7 @@ if (
     )
     > time.time()
     and LiveTradingLoop.enabled_by_server()
+    and _active_demo_connector()
 ):
     st.session_state.trading_active = True
 
@@ -1991,6 +2004,11 @@ if (
             raise LiveOrderRejected(
                 "auto_trading_restore_blocked",
                 "live trading safety gates are not active",
+            )
+        if not _active_demo_connector():
+            raise LiveOrderRejected(
+                "auto_trading_restore_blocked",
+                "a connected Demo account is required",
             )
         workflow.restore_automation_authorization(expires_at)
         loop = build_live_trading_loop()
