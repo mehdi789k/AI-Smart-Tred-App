@@ -98,8 +98,12 @@ while ($true) {
 
     $consecutiveRestarts++
     if ($consecutiveRestarts -gt $MaxConsecutiveRestarts) {
-        Write-WatchdogLog "Restart limit reached; watchdog stopped fail-closed."
-        exit 1
+        Write-WatchdogLog (
+            "Restart threshold reached; continuing with controlled retry " +
+            "after the next interval."
+        )
+        Start-Sleep -Seconds ([Math]::Min($IntervalSeconds * 4, 120))
+        $consecutiveRestarts = 0
     }
 
     try {

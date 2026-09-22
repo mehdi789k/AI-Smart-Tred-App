@@ -24,6 +24,14 @@ Describe "Dashboard watchdog scripts" {
         $watchdog | Should Match "MaxConsecutiveRestarts"
     }
 
+    It "keeps retrying after the restart threshold instead of exiting permanently" {
+        $watchdog = Get-Content -LiteralPath $watchdogPath -Raw
+
+        $watchdog | Should Match "Restart threshold reached"
+        $watchdog | Should Match "Start-Sleep"
+        $watchdog | Should Not Match "Restart limit reached; watchdog stopped"
+    }
+
     It "does not run the unstable AppTest suite during startup" {
         $startup = Get-Content -LiteralPath $startupPath -Raw
 

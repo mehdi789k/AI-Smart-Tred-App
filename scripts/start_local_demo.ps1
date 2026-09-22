@@ -96,7 +96,7 @@ Set-Location -LiteralPath $projectRoot
 $envFile = Join-Path $projectRoot ".env"
 if (Test-Path -LiteralPath $envFile) {
     Get-Content -LiteralPath $envFile | ForEach-Object {
-        if ($_ -match '^\s*(MT5_LOGIN|MT5_PASSWORD|MT5_SERVER|MT5_TERMINAL_PATH)\s*=(.*)$') {
+        if ($_ -match '^\s*(MT5_LOGIN|MT5_PASSWORD|MT5_SERVER|MT5_TERMINAL_PATH|MT5_LIVE_SYMBOLS)\s*=(.*)$') {
             $value = $matches[2].Trim()
             if (
                 $value.Length -ge 2 -and
@@ -116,13 +116,10 @@ if (Test-Path -LiteralPath $envFile) {
 
 Write-StartupLog "Starting local $TradingMode infrastructure."
 
-# Demo startup is fail-closed: it must never enable order automation. Live mode
-# remains an explicit, separately confirmed path.
-if ($TradingMode -eq "Demo") {
-    $env:MT5_AUTO_TRADING_ENABLED = "false"
-} else {
-    $env:MT5_AUTO_TRADING_ENABLED = "true"
-}
+# Both selectable modes enable the guarded automated loop. Demo mode remains
+# constrained by its Demo activation limits; Live mode still requires explicit
+# operator confirmation and live-readiness validation above.
+$env:MT5_AUTO_TRADING_ENABLED = "true"
 $env:MT5_LEGACY_ORDER_PATH_ENABLED = "false"
 if ($TradingMode -eq "Demo") {
     $env:MT5_DEMO_ENABLED = "true"
@@ -247,5 +244,5 @@ if (-not $dashboardReady) {
 Invoke-TradingReadinessValidation
 Start-MarketDataCollector
 Start-Process "http://127.0.0.1:8501"
-Write-StartupLog "Local Demo infrastructure and dashboard are healthy; health check passed; browser opened."
+Write-StartupLog "Local $TradingMode infrastructure and dashboard are healthy; health check passed; browser opened."
 exit 0

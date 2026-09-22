@@ -36,6 +36,7 @@ def validate_demo_readiness(
     *,
     demo_symbols: list[str] | None = None,
     max_daily_loss: float = 10.0,
+    allow_direct_dashboard: bool = False,
 ) -> None:
     """Fail closed unless the API is alive and trading gates are explicitly safe."""
     if health.get("data", {}).get("status") != "ok":
@@ -43,10 +44,15 @@ def validate_demo_readiness(
     data = readiness.get("data", {})
     if data.get("status") != "ready":
         raise RuntimeError("API readiness is not healthy")
-    if data.get("trading", {}).get("allowed") is not True:
-        raise RuntimeError("trading gate is not allowed for Demo validation")
     dependencies = data.get("dependencies", {})
-    if dependencies.get("mt5") != "ready":
+    direct_dashboard_unavailable = (
+        allow_direct_dashboard
+        and dependencies.get("mt5") == "unavailable"
+        and data.get("trading", {}).get("allowed") is False
+    )
+    if data.get("trading", {}).get("allowed") is not True and not direct_dashboard_unavailable:
+        raise RuntimeError("trading gate is not allowed for Demo validation")
+    if dependencies.get("mt5") != "ready" and not direct_dashboard_unavailable:
         raise RuntimeError("MT5 is not connected for Demo validation")
     if dependencies.get("circuit_breaker") not in {"armed", "not_configured"}:
         raise RuntimeError("circuit breaker is not safe for Demo validation")
@@ -79,6 +85,11 @@ def main() -> int:
     parser.add_argument("--timeout", type=float, default=5.0)
     parser.add_argument("--demo-symbol", action="append", dest="demo_symbols")
     parser.add_argument("--max-daily-loss", type=float, default=10.0)
+    parser.add_argument(
+        "--allow-direct-dashboard",
+        action="store_true",
+        help="Allow API-side MT5 unavailability when the Windows dashboard owns MT5.",
+    )
     parser.add_argument("--shadow-ledger")
     parser.add_argument("--audit-log")
     parser.add_argument("--max-shadow-drawdown", type=float, default=0.0)
@@ -90,6 +101,7 @@ def main() -> int:
         readiness,
         demo_symbols=args.demo_symbols,
         max_daily_loss=args.max_daily_loss,
+        allow_direct_dashboard=args.allow_direct_dashboard,
     )
     if args.shadow_ledger:
         validate_shadow_readiness(

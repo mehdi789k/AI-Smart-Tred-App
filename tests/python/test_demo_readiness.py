@@ -16,6 +16,23 @@ def test_demo_readiness_accepts_safe_connected_state():
     )
 
 
+def test_demo_readiness_accepts_unavailable_api_mt5_for_direct_dashboard():
+    validate_demo_readiness(
+        {"data": {"status": "ok"}},
+        {
+            "data": {
+                "status": "ready",
+                "trading": {"allowed": False},
+                "dependencies": {
+                    "mt5": "unavailable",
+                    "circuit_breaker": "not_configured",
+                },
+            }
+        },
+        allow_direct_dashboard=True,
+    )
+
+
 def test_demo_readiness_rejects_unsafe_demo_limits():
     with pytest.raises(RuntimeError, match="single allowed symbol"):
         validate_demo_readiness(

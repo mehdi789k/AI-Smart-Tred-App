@@ -1554,3 +1554,220 @@
 {"event": "order_accepted", "payload": {"correlation_id": "7a3c82d08c41470a", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789937592.419839}
 {"event": "order_accepted", "payload": {"correlation_id": "284268c8aac34e5c", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789937592.4298468}
 {"event": "order_outcome_unknown", "payload": {"correlation_id": "9888e429cd83464e", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789938441.9710515}
+{"event": "order_rejected", "payload": {"correlation_id": "2c7f07d1e45a42ae", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1789943832.6990857}
+{"event": "order_rejected", "payload": {"correlation_id": "46edb1428e934643", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1789943983.6677115}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "bd618919229647ba", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789945390.9164777}
+{"event": "order_rejected", "payload": {"correlation_id": "6a519593b8ca488f", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1789945527.9003868}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "1de1a19f0efe4df0", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789945755.5859003}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "4b8b240170914ac5", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789946579.421684}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "ea257567159e48ce", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789947598.481417}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "5f6acceafe3a4906", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789948202.4264512}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "cb7e3683d5d94acb", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789948509.6492033}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "4b62c9327074473c", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789950153.3704126}
+{"event": "order_rejected", "payload": {"correlation_id": "909cb97d24d24f50", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1789950372.190851}
+{"event": "order_rejected", "payload": {"correlation_id": "6fbbd0a919bb488f", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1789950909.3699558}
+{"event": "order_rejected", "payload": {"correlation_id": "36765f37fec741e2", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1789951649.5987287}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "55869e2365bc4918", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789951996.5817542}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "4e54fd52c87c417d", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789952374.6933599}
+{"event": "order_accepted", "payload": {"correlation_id": "4ebc2e4ec9a740dc", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789952410.9107282}
+{"event": "order_accepted", "payload": {"correlation_id": "7b29586e972549cd", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789952410.9268737}
+{"event": "order_accepted", "payload": {"correlation_id": "d4457843945542da", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.05}, "timestamp": 1789952410.9280558}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "e9b56ba6223a4492", "reason": "malformed_execution_result", "symbol": "EURUSD"}, "timestamp": 1789952411.8119075}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "702d233bdeba4320", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789952411.8246622}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "2e5efc9ef07540cb", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789952411.8350635}
+{"event": "order_rejected", "payload": {"correlation_id": "fbf86f977ca4499e", "reason": "broker_rejected", "retcode": 10030, "symbol": "EURUSD"}, "timestamp": 1789952411.8446348}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789952411.9047306}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789952412.0534685}
+{"event": "emergency_stop", "payload": {"demo_active": false, "reason": "operator_stop", "status": "stopped", "trade_count": 0}, "timestamp": 1789952412.0662315}
+{"event": "emergency_stop_reset", "payload": {"demo_active": false, "reason": "operator reviewed", "status": "approved", "trade_count": 0}, "timestamp": 1789952412.0697515}
+{"event": "order_accepted", "payload": {"correlation_id": "b005ec0ea0c1418b", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952412.0849254}
+{"event": "order_accepted", "payload": {"correlation_id": "f6825250a5ec442a", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952412.1008773}
+{"event": "order_accepted", "payload": {"correlation_id": "2b7e024f92de46df", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952412.1517}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "cb81488b4c48445a", "reason": "execution_result_unknown", "symbol": "EURUSD"}, "timestamp": 1789952412.2937372}
+{"event": "pending_order_attempt", "payload": {"demo_active": false, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789952412.3148813}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789952412.3263443}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789952412.3284929}
+{"event": "demo_gate_passed", "payload": {"demo_active": true, "status": "allowed", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789952412.3300014}
+{"event": "order_accepted", "payload": {"correlation_id": "0ea356317d1f44fd", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952412.3335454}
+{"event": "demo_trade_registered", "payload": {"demo_active": true, "status": "accepted", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789952412.3355446}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "SELL_LIMIT", "price": 101.0, "status": "pending", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789952412.3370533}
+{"event": "order_accepted", "payload": {"correlation_id": "6aeb40e21c1341d0", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952412.3520327}
+{"event": "order_accepted", "payload": {"correlation_id": "97bba333fa504f5b", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952412.3684473}
+{"event": "order_accepted", "payload": {"correlation_id": "daadea4e8f694061", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952412.3827956}
+{"event": "order_accepted", "payload": {"correlation_id": "3b0ab2ea787f4218", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952412.3938231}
+{"event": "order_rejected", "payload": {"correlation_id": "c6c90857acbd4556", "reason": "order_check_failed", "retcode": 10016, "symbol": "EURUSD"}, "timestamp": 1789952412.4359157}
+{"event": "order_accepted", "payload": {"correlation_id": "d10ba329f5a6403c", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789952412.4584708}
+{"event": "order_accepted", "payload": {"correlation_id": "b60b96f06b124e5c", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789952412.471192}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "fb2648e708f4476e", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789952563.5154595}
+{"event": "order_accepted", "payload": {"correlation_id": "14afd7b31e5943fb", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789952604.2609484}
+{"event": "order_accepted", "payload": {"correlation_id": "c654321d534d4840", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789952604.295237}
+{"event": "order_accepted", "payload": {"correlation_id": "5d91b005ebb64b8f", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.05}, "timestamp": 1789952604.2972374}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "f2ceec4a554e4d5c", "reason": "malformed_execution_result", "symbol": "EURUSD"}, "timestamp": 1789952605.2267494}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "207565e595e84b8a", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789952605.2380233}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "efeb9b304f4342b6", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789952605.2496984}
+{"event": "order_rejected", "payload": {"correlation_id": "b41dc924f78f46a7", "reason": "broker_rejected", "retcode": 10030, "symbol": "EURUSD"}, "timestamp": 1789952605.2644553}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789952605.3326664}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789952605.6395178}
+{"event": "emergency_stop", "payload": {"demo_active": false, "reason": "operator_stop", "status": "stopped", "trade_count": 0}, "timestamp": 1789952605.642572}
+{"event": "emergency_stop_reset", "payload": {"demo_active": false, "reason": "operator reviewed", "status": "approved", "trade_count": 0}, "timestamp": 1789952605.6440609}
+{"event": "order_accepted", "payload": {"correlation_id": "5349fcaebede43b4", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952605.6543353}
+{"event": "order_accepted", "payload": {"correlation_id": "8888f9853a1b4bdc", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952605.6671028}
+{"event": "order_accepted", "payload": {"correlation_id": "f013275346b74b1a", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952605.7173114}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "bc7aeaacb7224828", "reason": "execution_result_unknown", "symbol": "EURUSD"}, "timestamp": 1789952605.813226}
+{"event": "pending_order_attempt", "payload": {"demo_active": false, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789952605.8228202}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789952605.8355744}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789952605.8371444}
+{"event": "demo_gate_passed", "payload": {"demo_active": true, "status": "allowed", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789952605.8386543}
+{"event": "order_accepted", "payload": {"correlation_id": "f91ea89cbd534d0c", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952605.8411767}
+{"event": "demo_trade_registered", "payload": {"demo_active": true, "status": "accepted", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789952605.8436959}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "SELL_LIMIT", "price": 101.0, "status": "pending", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789952605.845202}
+{"event": "order_accepted", "payload": {"correlation_id": "9eff2da71e144095", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952605.8595262}
+{"event": "order_accepted", "payload": {"correlation_id": "eda8ea3f32984ff3", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952605.8762994}
+{"event": "order_accepted", "payload": {"correlation_id": "617feb5f31a54ad9", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952605.886321}
+{"event": "order_accepted", "payload": {"correlation_id": "1aa134d417b14c5f", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789952605.8969314}
+{"event": "order_rejected", "payload": {"correlation_id": "6aabe6b40bd445b6", "reason": "order_check_failed", "retcode": 10016, "symbol": "EURUSD"}, "timestamp": 1789952605.9620917}
+{"event": "order_accepted", "payload": {"correlation_id": "1e479957f8c74a38", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789952605.994921}
+{"event": "order_accepted", "payload": {"correlation_id": "a2210bfb9665447f", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789952606.0150306}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "aa248b6fd9b04754", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789952837.3014944}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "27fed46ddf82430c", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789953167.6344683}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "47e6dd28f4594374", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789953655.2817178}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "8837437bdc0a4477", "reason": "malformed_execution_result", "symbol": "EURUSD"}, "timestamp": 1789987769.1333497}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "d2c982fd329d443e", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789987769.188416}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "f5581b4ebc214eda", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789987769.196883}
+{"event": "order_rejected", "payload": {"correlation_id": "3970a1a635b24828", "reason": "broker_rejected", "retcode": 10030, "symbol": "EURUSD"}, "timestamp": 1789987769.2065523}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789987769.2526855}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789987769.3723807}
+{"event": "emergency_stop", "payload": {"demo_active": false, "reason": "operator_stop", "status": "stopped", "trade_count": 0}, "timestamp": 1789987769.3744278}
+{"event": "emergency_stop_reset", "payload": {"demo_active": false, "reason": "operator reviewed", "status": "approved", "trade_count": 0}, "timestamp": 1789987769.3779922}
+{"event": "order_accepted", "payload": {"correlation_id": "ccd85c841045487e", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789987769.386588}
+{"event": "order_accepted", "payload": {"correlation_id": "58071228c694453e", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789987769.3996336}
+{"event": "order_accepted", "payload": {"correlation_id": "1256e1dffe964a68", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789987769.4344652}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "adb185ed59fc4684", "reason": "execution_result_unknown", "symbol": "EURUSD"}, "timestamp": 1789987769.5064075}
+{"event": "pending_order_attempt", "payload": {"demo_active": false, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789987769.5314493}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789987769.5494492}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789987769.55145}
+{"event": "demo_gate_passed", "payload": {"demo_active": true, "status": "allowed", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789987769.5532987}
+{"event": "order_accepted", "payload": {"correlation_id": "976c8d8ed5f24826", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789987769.5548842}
+{"event": "demo_trade_registered", "payload": {"demo_active": true, "status": "accepted", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789987769.5564408}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "SELL_LIMIT", "price": 101.0, "status": "pending", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789987769.5585253}
+{"event": "order_accepted", "payload": {"correlation_id": "8d2254e134344167", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789987769.5723503}
+{"event": "order_accepted", "payload": {"correlation_id": "acc8f996a8794a72", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789987769.584239}
+{"event": "order_accepted", "payload": {"correlation_id": "4169108382094b76", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789987769.591299}
+{"event": "order_accepted", "payload": {"correlation_id": "992328c7e8d74ae4", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789987769.5988522}
+{"event": "order_rejected", "payload": {"correlation_id": "c98296684c984b80", "reason": "order_check_failed", "retcode": 10016, "symbol": "EURUSD"}, "timestamp": 1789987769.6222482}
+{"event": "order_accepted", "payload": {"correlation_id": "d9756577785e4684", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789987769.6397963}
+{"event": "order_accepted", "payload": {"correlation_id": "987a0ed9d6df4a9b", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789987769.6486225}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "68f4b948fca04054", "reason": "malformed_execution_result", "symbol": "EURUSD"}, "timestamp": 1789988527.5104284}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "8f787b94815f451e", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789988527.5524683}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "8651a50cf0004763", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789988527.5606406}
+{"event": "order_rejected", "payload": {"correlation_id": "a4f150eb4d444cda", "reason": "broker_rejected", "retcode": 10030, "symbol": "EURUSD"}, "timestamp": 1789988527.5667605}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988527.6200676}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988527.719725}
+{"event": "emergency_stop", "payload": {"demo_active": false, "reason": "operator_stop", "status": "stopped", "trade_count": 0}, "timestamp": 1789988527.7210743}
+{"event": "emergency_stop_reset", "payload": {"demo_active": false, "reason": "operator reviewed", "status": "approved", "trade_count": 0}, "timestamp": 1789988527.7226305}
+{"event": "order_accepted", "payload": {"correlation_id": "3121b81ef33c4e27", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988527.7309961}
+{"event": "order_accepted", "payload": {"correlation_id": "f70a6c8ade214ae1", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988527.738517}
+{"event": "order_accepted", "payload": {"correlation_id": "28855efbd82a4a30", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988527.7563396}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "86e412bd3cc849c8", "reason": "execution_result_unknown", "symbol": "EURUSD"}, "timestamp": 1789988527.799924}
+{"event": "pending_order_attempt", "payload": {"demo_active": false, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988527.821026}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988527.8308592}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988527.8328576}
+{"event": "demo_gate_passed", "payload": {"demo_active": true, "status": "allowed", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988527.8338568}
+{"event": "order_accepted", "payload": {"correlation_id": "7c67a4541b56412b", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988527.8367136}
+{"event": "demo_trade_registered", "payload": {"demo_active": true, "status": "accepted", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789988527.8383298}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "SELL_LIMIT", "price": 101.0, "status": "pending", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789988527.8410485}
+{"event": "order_accepted", "payload": {"correlation_id": "b527b5481bd84755", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988527.8491871}
+{"event": "order_accepted", "payload": {"correlation_id": "b83213705f074d6e", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988527.85861}
+{"event": "order_accepted", "payload": {"correlation_id": "1a5d26ebaa6443fa", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988527.8661244}
+{"event": "order_accepted", "payload": {"correlation_id": "fbafe43d2a6f428b", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988527.8731298}
+{"event": "order_rejected", "payload": {"correlation_id": "487edb02b1f84444", "reason": "order_check_failed", "retcode": 10016, "symbol": "EURUSD"}, "timestamp": 1789988527.8927171}
+{"event": "order_accepted", "payload": {"correlation_id": "fabfe4b58e8540b2", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789988527.910244}
+{"event": "order_accepted", "payload": {"correlation_id": "400997d62f3a45fd", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789988527.9172437}
+{"event": "order_accepted", "payload": {"correlation_id": "a14c058753c34cbb", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789988528.0617702}
+{"event": "order_accepted", "payload": {"correlation_id": "d903fae669bd4b6f", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789988528.083216}
+{"event": "order_accepted", "payload": {"correlation_id": "19117274730445b1", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.05}, "timestamp": 1789988528.085215}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "910f44af2a6f4d10", "reason": "malformed_execution_result", "symbol": "EURUSD"}, "timestamp": 1789988579.567113}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "b1f44e3f393148fb", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789988579.577913}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "5ad08fb25bb3456b", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789988579.5875661}
+{"event": "order_rejected", "payload": {"correlation_id": "ff980609bdbe47d5", "reason": "broker_rejected", "retcode": 10030, "symbol": "EURUSD"}, "timestamp": 1789988579.5945907}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988579.6355798}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988579.7442207}
+{"event": "emergency_stop", "payload": {"demo_active": false, "reason": "operator_stop", "status": "stopped", "trade_count": 0}, "timestamp": 1789988579.7462204}
+{"event": "emergency_stop_reset", "payload": {"demo_active": false, "reason": "operator reviewed", "status": "approved", "trade_count": 0}, "timestamp": 1789988579.748235}
+{"event": "order_accepted", "payload": {"correlation_id": "e8ca8770aa3a4c96", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988579.756081}
+{"event": "order_accepted", "payload": {"correlation_id": "73d3a6e6088647ff", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988579.7666886}
+{"event": "order_accepted", "payload": {"correlation_id": "14a8bdf658e5481c", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988579.790524}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "7cf57b5320ac4c67", "reason": "execution_result_unknown", "symbol": "EURUSD"}, "timestamp": 1789988579.8395574}
+{"event": "pending_order_attempt", "payload": {"demo_active": false, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988579.8488917}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988579.8565526}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988579.8595347}
+{"event": "demo_gate_passed", "payload": {"demo_active": true, "status": "allowed", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988579.8615098}
+{"event": "order_accepted", "payload": {"correlation_id": "de169dd5d80f4c35", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988579.863516}
+{"event": "demo_trade_registered", "payload": {"demo_active": true, "status": "accepted", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789988579.8655128}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "SELL_LIMIT", "price": 101.0, "status": "pending", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789988579.8675156}
+{"event": "order_accepted", "payload": {"correlation_id": "8fc7179b1cb645f2", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988579.876601}
+{"event": "order_accepted", "payload": {"correlation_id": "0865bf41f6c84c14", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988579.887451}
+{"event": "order_accepted", "payload": {"correlation_id": "426ca5bfc0494634", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988579.8959801}
+{"event": "order_accepted", "payload": {"correlation_id": "2ba04d9df93a4740", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988579.9044917}
+{"event": "order_rejected", "payload": {"correlation_id": "c368b9a3cac949b2", "reason": "order_check_failed", "retcode": 10016, "symbol": "EURUSD"}, "timestamp": 1789988579.9280174}
+{"event": "order_accepted", "payload": {"correlation_id": "f39bcfa4f5df470c", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789988579.944338}
+{"event": "order_accepted", "payload": {"correlation_id": "4a2f1f21d2084800", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789988579.954017}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "75485ef087ce42be", "reason": "malformed_execution_result", "symbol": "EURUSD"}, "timestamp": 1789988682.1277065}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "f232ea9b81b04271", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789988682.1387315}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "ad6966983c0d497b", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": "EURUSD"}, "timestamp": 1789988682.1478739}
+{"event": "order_rejected", "payload": {"correlation_id": "30a755a48b7c4354", "reason": "broker_rejected", "retcode": 10030, "symbol": "EURUSD"}, "timestamp": 1789988682.1558778}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988682.1974387}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988682.3170848}
+{"event": "emergency_stop", "payload": {"demo_active": false, "reason": "operator_stop", "status": "stopped", "trade_count": 0}, "timestamp": 1789988682.3190837}
+{"event": "emergency_stop_reset", "payload": {"demo_active": false, "reason": "operator reviewed", "status": "approved", "trade_count": 0}, "timestamp": 1789988682.321084}
+{"event": "order_accepted", "payload": {"correlation_id": "584a0c1b8e174f3e", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988682.330164}
+{"event": "order_accepted", "payload": {"correlation_id": "a14392df123b4030", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988682.338683}
+{"event": "order_accepted", "payload": {"correlation_id": "a357893b78b44f1b", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988682.3591309}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "2cc50534a2054feb", "reason": "execution_result_unknown", "symbol": "EURUSD"}, "timestamp": 1789988682.4114392}
+{"event": "pending_order_attempt", "payload": {"demo_active": false, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988682.419448}
+{"event": "demo_activated", "payload": {"demo_active": true, "reason": "manual_activation", "status": "approved", "trade_count": 0}, "timestamp": 1789988682.4281802}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "BUY_LIMIT", "price": 99.0, "status": "pending", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988682.4313157}
+{"event": "demo_gate_passed", "payload": {"demo_active": true, "status": "allowed", "symbol": "EURUSD", "trade_count": 0, "volume": 0.1}, "timestamp": 1789988682.4323144}
+{"event": "order_accepted", "payload": {"correlation_id": "1626962d7b7f4041", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988682.434315}
+{"event": "demo_trade_registered", "payload": {"demo_active": true, "status": "accepted", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789988682.437313}
+{"event": "pending_order_attempt", "payload": {"demo_active": true, "magic": 7, "order_type": "SELL_LIMIT", "price": 101.0, "status": "pending", "symbol": "EURUSD", "trade_count": 1, "volume": 0.1}, "timestamp": 1789988682.438314}
+{"event": "order_accepted", "payload": {"correlation_id": "7af8abee2db845ea", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988682.447547}
+{"event": "order_accepted", "payload": {"correlation_id": "77f8b61d326a435c", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988682.4577332}
+{"event": "order_accepted", "payload": {"correlation_id": "bf9198fbe3c44d46", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988682.4667084}
+{"event": "order_accepted", "payload": {"correlation_id": "3ffca63220bb47ac", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.1}, "timestamp": 1789988682.4753382}
+{"event": "order_rejected", "payload": {"correlation_id": "ab282c8db4af40e0", "reason": "order_check_failed", "retcode": 10016, "symbol": "EURUSD"}, "timestamp": 1789988682.4998937}
+{"event": "order_accepted", "payload": {"correlation_id": "d94bbcb1b4fb4af1", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1789988682.5154564}
+{"event": "order_accepted", "payload": {"correlation_id": "cbdb2feb94d3447a", "retcode": 10009, "symbol": "EURUSD", "ticket": null, "volume": null}, "timestamp": 1789988682.5234618}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "4c15dfa5b24a4eee", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789988717.2298107}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "6ca0ab1f90fc43fd", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789989631.3786235}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "cb3e93c9310d4b8d", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789989763.2707539}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "67412535c473462c", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789989993.8711958}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "b5215052eca4474f", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789991542.2695565}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "27a26d519b114d11", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789991697.3226278}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "1c5c68bdb7f948aa", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789992134.7037928}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "8b9cfba2fae14040", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1789992766.700505}
+{"event": "order_rejected", "payload": {"correlation_id": "440162fc8aac4c19", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1790017347.5394254}
+{"event": "order_rejected", "payload": {"correlation_id": "ebbd6ef5df514dda", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1790023432.9128106}
+{"event": "order_rejected", "payload": {"correlation_id": "75af62e1f6f94161", "reason": "Trade disabled", "retcode": 10017, "symbol": "ZECUSD_l"}, "timestamp": 1790037839.1237547}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "a50117de51dd45a7", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790038222.6828172}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "8af90664a61a4c82", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790039199.762781}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "6024d343bdd3407b", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790039595.5831099}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "b73efed5c1ac46fd", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790040954.1701624}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "bec2ac0f984f44b2", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790041033.3576417}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "3b399db36ecc4f19", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790041094.6527836}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "247d9ffea5c64300", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790041183.5192869}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "96098f31b11842b9", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790041318.562542}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "1127340056c94fae", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790041500.6759455}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "d33866b3ee7d43ba", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790041582.6185105}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "1f660b384d6c450a", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790042223.1252725}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "0bb5c4f46f664cda", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790042353.5071576}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "46404c82518249d0", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790042477.0664375}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "1e2e5521e99d4cb8", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790042767.8651097}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "556312ef208d4322", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790042893.802525}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "739c941636ce4345", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790044554.5125782}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "0af6bca9db744776", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790044599.0763676}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "ff24663929664e0c", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790045010.0855987}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "c36b818ac0e94158", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790046093.9279332}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "0a247687e0c2474a", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790046551.2428963}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "f70b0768b42444d8", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790049972.4802487}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "2be7f7ffda974168", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790051085.6433825}

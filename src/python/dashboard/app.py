@@ -4505,7 +4505,7 @@ elif page == "Settings":
                     st.error("❌ MT5 connection is unavailable.")
         st.subheader(t("Current Applied Settings"))
         st.json(st.session_state.saved_settings)
-        _render_environment_management()
+    _render_environment_management()
     _legacy_settings = """
     
     # Risk Management Section

@@ -69,11 +69,12 @@ def test_env_example_preserves_canonical_non_secret_values() -> None:
     assert values == CANONICAL_NON_SECRET_ENV
 
 
-def test_local_demo_startup_enables_server_auto_trading_gate_only_for_demo() -> None:
+def test_local_demo_startup_enables_guarded_auto_trading_for_selected_mode() -> None:
     startup_script = (PROJECT_ROOT / "scripts" / "start_local_demo.ps1").read_text(
         encoding="utf-8"
     )
 
     assert '$env:MT5_AUTO_TRADING_ENABLED = "true"' in startup_script
+    assert 'if ($TradingMode -eq "Demo")' in startup_script
     assert '$env:MT5_DEMO_ENABLED = "true"' in startup_script
     assert '$env:MT5_LEGACY_ORDER_PATH_ENABLED = "false"' in startup_script
