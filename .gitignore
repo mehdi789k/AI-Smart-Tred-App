@@ -31,6 +31,7 @@ target/
 
 # Local tool metadata
 .superpowers/
+.worktrees/
 .python-version
 .ruff_cache/
 

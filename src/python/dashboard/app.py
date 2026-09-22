@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 import json
 import os
 import re
@@ -23,6 +24,10 @@ PROJECT_ROOT = os.path.abspath(
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+from src.python.dashboard.env_manager import (  # noqa: E402
+    EnvironmentManager,
+    EnvironmentManagerError,
+)
 from src.python.logging_config import get_logger  # noqa: E402
 
 logger = get_logger("dashboard")
@@ -557,6 +562,10 @@ TRANSLATIONS = {
         "Stop Loss (optional; 0 = none)": "حد ضرر (اختیاری؛ صفر = بدون حد ضرر)",
         "Take Profit (optional; 0 = none)": "حد سود (اختیاری؛ صفر = بدون حد سود)",
         "Confirmation code": "کد تأیید",
+        "Secure Environment Management": "مدیریت امن محیط",
+        "Dashboard admin token": "توکن مدیر داشبورد",
+        "Unlock environment settings": "باز کردن قفل تنظیمات محیط",
+        "Environment settings are locked.": "تنظیمات محیط قفل است.",
     }
 }
 
@@ -566,6 +575,158 @@ language = st.sidebar.selectbox("Language / زبان", ["فارسی", "English"]
 def t(text: str) -> str:
     """Return the localized UI label while keeping internal identifiers stable."""
     return TRANSLATIONS["فارسی"].get(text, text) if language == "فارسی" else text
+
+
+def _dashboard_env_access_allowed(password: str) -> bool:
+    """Check the dashboard administrator token without retaining either value."""
+    configured_token = os.getenv("DASHBOARD_ADMIN_TOKEN")
+    if not configured_token:
+        return False
+    return hmac.compare_digest(password, configured_token)
+
+
+def _clear_sensitive_environment_inputs(keys: list[str]) -> None:
+    """Remove one-shot environment secrets from Streamlit session state."""
+    for key in keys:
+        st.session_state.pop(f"dashboard_env_sensitive_{key}", None)
+    st.session_state.pop("dashboard_env_admin_token", None)
+
+
+def _render_environment_management() -> None:
+    """Render the locked, fail-closed project environment management controls."""
+    with st.expander(f"🔐 {t('Secure Environment Management')}", expanded=False):
+        if not os.getenv("DASHBOARD_ADMIN_TOKEN"):
+            st.error(
+                "Environment management is locked: DASHBOARD_ADMIN_TOKEN is not configured."
+            )
+            return
+
+        if "dashboard_env_unlocked" not in st.session_state:
+            st.session_state.dashboard_env_unlocked = False
+        password = st.text_input(
+            t("Dashboard admin token"),
+            type="password",
+            key="dashboard_env_admin_token",
+        )
+        if st.button(
+            t("Unlock environment settings"), key="dashboard_env_unlock"
+        ):
+            st.session_state.dashboard_env_unlocked = _dashboard_env_access_allowed(
+                password
+            )
+            if st.session_state.dashboard_env_unlocked:
+                st.success("Environment management unlocked for this session.")
+            else:
+                st.error("Invalid dashboard admin token.")
+            _clear_sensitive_environment_inputs([])
+        if not st.session_state.get("dashboard_env_unlocked", False):
+            st.info(t("Environment settings are locked."))
+            return
+
+        manager = EnvironmentManager(Path(PROJECT_ROOT))
+        try:
+            entries = manager.read_entries()
+        except EnvironmentManagerError as error:
+            st.error(f"Unable to read environment settings: {error}")
+            return
+
+        st.caption(
+            "Sensitive values are masked and are never rendered or logged."
+        )
+        changed_values: dict[str, str] = {}
+        for entry in entries:
+            if entry.is_sensitive:
+                replacement = st.text_input(
+                    entry.key,
+                    value="",
+                    type="password",
+                    placeholder="Leave blank to keep the current value",
+                    key=f"dashboard_env_sensitive_{entry.key}",
+                )
+                if replacement:
+                    changed_values[entry.key] = replacement
+                st.caption(f"{entry.key}: {entry.display_value}")
+            else:
+                value = st.text_input(
+                    entry.key,
+                    value=entry.display_value,
+                    key=f"dashboard_env_value_{entry.key}",
+                )
+                if value != entry.value:
+                    changed_values[entry.key] = value
+
+        if st.button(
+            "Save environment settings",
+            type="primary",
+            key="dashboard_env_save",
+        ):
+            try:
+                manager.update(changed_values)
+            except EnvironmentManagerError as error:
+                st.error(f"Environment settings were not saved: {error}")
+            else:
+                st.success("Environment settings saved.")
+                st.warning(
+                    "Restart the running API, dashboard, and collector processes "
+                    "for changes to take effect."
+                )
+                _clear_sensitive_environment_inputs(
+                    [entry.key for entry in entries if entry.is_sensitive]
+                )
+
+        st.subheader("Destructive and profile operations")
+        st.warning(
+            "Stop active API, collector, broker, and trading services before "
+            "deleting or resetting .env. The dashboard will not stop them automatically."
+        )
+        delete_confirmed = st.checkbox(
+            "I understand that deleting .env removes the active environment file.",
+            key="dashboard_env_delete_confirm",
+        )
+        if st.button(
+            "Delete .env",
+            disabled=not delete_confirmed,
+            key="dashboard_env_delete",
+        ):
+            try:
+                deleted = manager.delete()
+            except EnvironmentManagerError as error:
+                st.error(f"Environment file was not deleted: {error}")
+            else:
+                st.success(
+                    "Environment file deleted and backed up."
+                    if deleted
+                    else "No environment file existed."
+                )
+                st.session_state.dashboard_env_unlocked = False
+                st.warning(
+                    "Restart the running API, dashboard, and collector processes."
+                )
+
+        for profile, label in (
+            ("demo", "Reset to demo profile"),
+            ("live", "Reset to live profile"),
+        ):
+            confirmed = st.checkbox(
+                f"I understand that {label.lower()} changes environment settings.",
+                key=f"dashboard_env_{profile}_confirm",
+            )
+            if st.button(
+                label,
+                disabled=not confirmed,
+                key=f"dashboard_env_reset_{profile}",
+            ):
+                try:
+                    manager.reset(profile)
+                except EnvironmentManagerError as error:
+                    st.error(f"{label} failed: {error}")
+                else:
+                    st.success(f"{label} applied; sensitive values were preserved.")
+                    st.session_state.dashboard_env_unlocked = False
+                    st.warning(
+                        "Auto trading remains disabled. Restart the running API, "
+                        "dashboard, and collector processes."
+                    )
 
 
 def localize_cycle_error(message: str) -> str:
@@ -4344,6 +4505,7 @@ elif page == "Settings":
                     st.error("❌ MT5 connection is unavailable.")
         st.subheader(t("Current Applied Settings"))
         st.json(st.session_state.saved_settings)
+        _render_environment_management()
     _legacy_settings = """
     
     # Risk Management Section

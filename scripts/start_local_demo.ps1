@@ -1,3 +1,9 @@
+param(
+    [ValidateSet("Demo", "Live")]
+    [string]$TradingMode = "Demo",
+    [switch]$ConfirmLiveTrading
+)
+
 $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -71,20 +77,58 @@ function Stop-MarketDataCollectorForDirectDashboard {
     }
 }
 
+if ($TradingMode -eq "Live") {
+    if (-not $ConfirmLiveTrading) {
+        throw "Live mode requires -ConfirmLiveTrading. No trading services were started."
+    }
+
+    if ($env:LIVE_TRADING_CONFIRMATION -ne "I_UNDERSTAND_LIVE_TRADING_RISK") {
+        throw "Live mode requires LIVE_TRADING_CONFIRMATION=I_UNDERSTAND_LIVE_TRADING_RISK."
+    }
+}
+
 if (-not (Test-Path -LiteralPath $python)) {
     throw "Python 3.12 was not found at $python"
 }
 
 Set-Location -LiteralPath $projectRoot
-Write-StartupLog "Starting local Demo infrastructure."
 
-# Compose reads the parent process environment before the host dashboard
-# settings below are applied. Enable the server automation gate for the
-# explicitly approved Demo path while retaining the workflow's confirmation
-# and risk controls.
-$env:MT5_AUTO_TRADING_ENABLED = "true"
+$envFile = Join-Path $projectRoot ".env"
+if (Test-Path -LiteralPath $envFile) {
+    Get-Content -LiteralPath $envFile | ForEach-Object {
+        if ($_ -match '^\s*(MT5_LOGIN|MT5_PASSWORD|MT5_SERVER|MT5_TERMINAL_PATH)\s*=(.*)$') {
+            $value = $matches[2].Trim()
+            if (
+                $value.Length -ge 2 -and
+                (($value.StartsWith('"') -and $value.EndsWith('"')) -or
+                    ($value.StartsWith("'") -and $value.EndsWith("'")))
+            ) {
+                $value = $value.Substring(1, $value.Length - 2)
+            }
+            [Environment]::SetEnvironmentVariable(
+                $matches[1],
+                $value,
+                [EnvironmentVariableTarget]::Process
+            )
+        }
+    }
+}
+
+Write-StartupLog "Starting local $TradingMode infrastructure."
+
+# Demo startup is fail-closed: it must never enable order automation. Live mode
+# remains an explicit, separately confirmed path.
+if ($TradingMode -eq "Demo") {
+    $env:MT5_AUTO_TRADING_ENABLED = "false"
+} else {
+    $env:MT5_AUTO_TRADING_ENABLED = "true"
+}
 $env:MT5_LEGACY_ORDER_PATH_ENABLED = "false"
-$env:MT5_DEMO_ENABLED = "true"
+if ($TradingMode -eq "Demo") {
+    $env:MT5_DEMO_ENABLED = "true"
+} else {
+    $env:MT5_DEMO_ENABLED = "false"
+}
 $env:MT5_DASHBOARD_DIRECT = "true"
 Stop-MarketDataCollectorForDirectDashboard
 
@@ -110,29 +154,39 @@ if (-not $apiReady) {
     throw "API health check did not become ready within 60 seconds."
 }
 
-$envFile = Join-Path $projectRoot ".env"
-if (Test-Path -LiteralPath $envFile) {
-    Get-Content -LiteralPath $envFile | ForEach-Object {
-        if ($_ -match '^\s*(MT5_LOGIN|MT5_PASSWORD|MT5_SERVER|MT5_TERMINAL_PATH)\s*=(.*)$') {
-            $value = $matches[2].Trim()
-            if (
-                $value.Length -ge 2 -and
-                (($value.StartsWith('"') -and $value.EndsWith('"')) -or
-                    ($value.StartsWith("'") -and $value.EndsWith("'")))
-            ) {
-                $value = $value.Substring(1, $value.Length - 2)
-            }
-            [Environment]::SetEnvironmentVariable(
-                $matches[1],
-                $value,
-                [EnvironmentVariableTarget]::Process
-            )
-        }
+foreach ($requiredVariable in @("MT5_LOGIN", "MT5_PASSWORD", "MT5_SERVER", "MT5_TERMINAL_PATH")) {
+    if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($requiredVariable))) {
+        throw "$requiredVariable is required in .env or the process environment."
     }
 }
 
 $env:MT5_ENABLED = "true"
 $env:STREAMLIT_SERVER_HEADLESS = "true"
+
+function Invoke-TradingReadinessValidation {
+    if ($TradingMode -eq "Live") {
+        $readinessArguments = @(
+            "scripts\verify_live_readiness.py",
+            "--base-url", "http://127.0.0.1:8000",
+            "--timeout", "5"
+        )
+    } else {
+        $readinessArguments = @(
+            "scripts\verify_demo_readiness.py",
+            "--base-url", "http://127.0.0.1:8000",
+            "--timeout", "5",
+            "--demo-symbol", "XAUUSD",
+            "--max-daily-loss", "10"
+        )
+    }
+    if ($env:MT5_DASHBOARD_DIRECT -eq "true") {
+        $readinessArguments += "--allow-direct-dashboard"
+    }
+    & $python $readinessArguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "$TradingMode readiness validation failed with exit code $LASTEXITCODE."
+    }
+}
 
 $existingConnection = Get-NetTCPConnection -LocalPort 8501 -State Listen -ErrorAction SilentlyContinue
 if ($existingConnection) {
@@ -143,6 +197,7 @@ if ($existingConnection) {
             $existingPid = (Get-NetTCPConnection -LocalPort 8501 -State Listen |
                 Select-Object -First 1 -ExpandProperty OwningProcess)
             Set-Content -Path $dashboardPidFile -Value $existingPid
+            Invoke-TradingReadinessValidation
             Start-MarketDataCollector
             Start-Process "http://127.0.0.1:8501"
             Write-StartupLog "Dashboard is already healthy; health check passed and browser opened."
@@ -189,6 +244,7 @@ if (-not $dashboardReady) {
     throw "Dashboard health check did not become ready within 60 seconds."
 }
 
+Invoke-TradingReadinessValidation
 Start-MarketDataCollector
 Start-Process "http://127.0.0.1:8501"
 Write-StartupLog "Local Demo infrastructure and dashboard are healthy; health check passed; browser opened."

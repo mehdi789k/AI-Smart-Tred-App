@@ -42,6 +42,7 @@ def test_health_and_dry_run_are_safe_by_default():
 
 def test_readiness_and_metrics_are_available(monkeypatch):
     monkeypatch.delenv("OBS_METRICS_TOKEN", raising=False)
+    monkeypatch.delenv("MT5_AUTO_TRADING_ENABLED", raising=False)
     client = TestClient(create_app(allowed_symbols=frozenset({"XAUUSD"})))
 
     readiness = client.get("/ready")
@@ -105,7 +106,8 @@ def test_readiness_reports_mt5_and_circuit_breaker_without_sending_orders():
     assert data["trading"]["allowed"] is False
 
 
-def test_readiness_reports_mt5_failure_as_trading_unavailable():
+def test_readiness_reports_mt5_failure_as_trading_unavailable(monkeypatch):
+    monkeypatch.delenv("MT5_AUTO_TRADING_ENABLED", raising=False)
     class DisconnectedMT5:
         def is_connected(self):
             raise RuntimeError("terminal unavailable")
@@ -123,6 +125,44 @@ def test_readiness_reports_mt5_failure_as_trading_unavailable():
     data = response.json()["data"]
     assert data["dependencies"]["mt5"] == "unavailable"
     assert data["trading"]["allowed"] is False
+
+
+def test_live_readiness_blocks_when_circuit_breaker_is_unavailable(monkeypatch):
+    monkeypatch.setenv("MT5_AUTO_TRADING_ENABLED", "true")
+    client = TestClient(create_app(allowed_symbols=frozenset({"XAUUSD"})))
+
+    response = client.get("/ready")
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == "circuit_breaker_unavailable"
+
+
+def test_live_startup_arms_circuit_breaker_from_account(monkeypatch):
+    monkeypatch.setenv("MT5_AUTO_TRADING_ENABLED", "true")
+    monkeypatch.setenv("MT5_ENABLED", "true")
+
+    class LiveMT5:
+        def is_connected(self):
+            return True
+
+        def get_account_summary(self):
+            return {"connected": True, "login": 123, "server": "LiveBroker", "equity": 1000}
+
+        def get_history(self, days=1):
+            return []
+
+    with TestClient(
+        create_app(
+            allowed_symbols=frozenset({"XAUUSD"}),
+            mt5_connection=LiveMT5(),
+        )
+    ) as client:
+        response = client.get("/ready")
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["dependencies"]["circuit_breaker"] == "armed"
+    assert data["trading"]["allowed"] is True
 
 
 def test_metrics_requires_internal_token_when_configured(monkeypatch):

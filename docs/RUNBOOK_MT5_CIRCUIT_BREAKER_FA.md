@@ -111,6 +111,25 @@ py scripts\verify_demo_readiness.py `
 عبور drawdown از حد مجاز، چند symbol یا daily-loss ناامن، fail-closed متوقف
 می‌شود.
 
+### بررسی Readiness حساب Live
+
+برای حساب Live، پس از قرار دادن گیت‌های زیر در محیط، فقط بررسی خواندنی را اجرا
+کنید؛ این دستور هیچ endpoint سفارش یا `order_send` را فراخوانی نمی‌کند:
+
+```powershell
+$env:MT5_AUTO_TRADING_ENABLED = "true"
+$env:MT5_DEMO_ENABLED = "false"
+py scripts\verify_live_readiness.py `
+  --base-url http://127.0.0.1:8000 `
+  --allow-direct-dashboard
+```
+
+این بررسی login/server، نمادهای Market Watch، تازگی tick، equity حساب و
+Circuit Breaker را کنترل می‌کند. در حالت `MT5_DASHBOARD_DIRECT=true`، داشبورد
+مالک اتصال MT5 است و API فقط health خود را گزارش می‌کند؛ هر خطای اتصال، دادهٔ
+کهنه، حساب ناهماهنگ یا Circuit Breaker tripped باید اجرای سفارش را متوقف کند.
+پس از عبور این گیت نیز برای هر سفارش مشخص، تأیید انسانی جداگانه لازم است.
+
 ## معیار بازگشت به سرویس
 
 - MT5 و ZeroMQ پایدار و قابل healthcheck هستند.

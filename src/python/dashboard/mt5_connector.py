@@ -516,7 +516,11 @@ class MT5Connection:
                 "ask": tick.ask if tick else info.ask,
                 "spread": (tick.ask - tick.bid) if tick else (info.ask - info.bid),
                 "volume": tick.volume if tick else 0,
-                "last_update": datetime.fromtimestamp(tick.time) if tick else None,
+                "last_update": (
+                    datetime.fromtimestamp(tick.time, tz=timezone.utc)
+                    if tick
+                    else None
+                ),
             }
         except Exception as e:
             logger.error(f"Error getting symbol info for {symbol}: {e}")

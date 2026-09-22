@@ -61,3 +61,17 @@ def test_all_dashboard_pages_render_without_unhandled_exceptions():
         assert not app.get("exception"), (
             f"Unhandled exception on dashboard page {page!r}: {app.get('exception_repr')}"
         )
+
+
+def test_settings_page_is_locked_without_admin_token(monkeypatch):
+    """Settings must render fail-closed when no dashboard token is configured."""
+    monkeypatch.delenv("DASHBOARD_ADMIN_TOKEN", raising=False)
+    monkeypatch.setenv("MT5_ENABLED", "false")
+    monkeypatch.setenv("MT5_DASHBOARD_DIRECT", "false")
+
+    app = run_apptest_subprocess(DASHBOARD_PATH, 60, page="Settings")
+
+    assert not app.get("exception"), (
+        "Settings rendered an unhandled exception without an admin token: "
+        f"{app.get('exception_repr')}"
+    )

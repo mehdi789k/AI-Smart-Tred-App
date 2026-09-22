@@ -189,6 +189,9 @@ class MT5Connection:
         if tick is None:
             return {}
 
+        tick_time = getattr(tick, "time_msc", None)
+        if tick_time is None:
+            tick_time = getattr(tick, "time", None)
         return {
             "symbol": symbol,
             "bid": tick.bid,
@@ -199,7 +202,23 @@ class MT5Connection:
             "high": info.high,
             "low": info.low,
             "digits": info.digits,
+            "timestamp": tick_time,
         }
+
+    def get_symbols_list(self, visible_only: bool = True) -> list[Dict[str, Any]]:
+        """Return symbols currently available in the terminal market watch."""
+        if not self.is_connected():
+            return []
+        symbols = mt5.symbols_get()
+        if symbols is None:
+            return []
+        result: list[Dict[str, Any]] = []
+        for item in symbols:
+            name = getattr(item, "name", None)
+            visible = bool(getattr(item, "visible", False))
+            if name and (not visible_only or visible):
+                result.append({"symbol": str(name), "visible": visible})
+        return result
 
     def get_candles(
         self, symbol: str, timeframe: int, count: int = 100
