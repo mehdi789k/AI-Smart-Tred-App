@@ -126,6 +126,29 @@ activation checklist. The Python and MQL5 defaults are defined in
 [ExecutionPolicy.mqh](../../src/mql5/ExecutionPolicy.mqh); keep these values
 aligned.
 
+## Dashboard environment operations
+
+Set `DASHBOARD_ADMIN_TOKEN` through the deployment secret store or another
+mechanism outside source control before opening the dashboard Settings page. Do
+not put the token, `.env` contents, or any other credential in the repository.
+Without the token, the environment-management section stays locked.
+
+The Settings page masks sensitive values and never renders or logs their raw
+contents. To replace a sensitive value, enter the replacement in the blank
+password field; leaving it blank preserves the current value. Before replacing
+or deleting `.env`, and before either profile reset, the dashboard writes a
+timestamped backup under the configured `backups/` directory.
+
+Use the `demo` reset for a conservative demo environment: it disables MT5/live
+execution. The `live` reset changes the environment mode while preserving
+existing sensitive values; it does not enable order execution, and
+`MT5_AUTO_TRADING_ENABLED` remains `false`. These controls do not replace the
+separate execution activation checklist or backend safety gates.
+
+Restart the dashboard, API, and collector processes after every environment
+change. The operation is implemented inside Streamlit; it does not add or
+modify an HTTP endpoint, so `docs/API_CONTRACT.md` remains unchanged.
+
 ## Start the API and database
 
 ```powershell

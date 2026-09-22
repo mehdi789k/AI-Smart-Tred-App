@@ -233,6 +233,25 @@ flowchart TD
 
 ### داشبورد تصمیم‌گیری فعلی
 
+### Dashboard environment management
+
+The Streamlit Settings page provides the controlled operator surface for local
+environment maintenance; it is not an HTTP/API endpoint. Operators must provide
+`DASHBOARD_ADMIN_TOKEN` outside source control. If the token is absent, the
+environment-management section remains locked and fails closed.
+
+The page never displays raw secrets. Sensitive values are masked, and a
+replacement is entered into a blank field without revealing the existing value.
+Every replacement, profile reset, or deletion creates a timestamped backup under
+the configured `backups/` directory before the mutation. The `demo` reset applies
+conservative demo settings and disables MT5/live execution. The `live` reset
+changes only the environment mode while preserving existing sensitive values; it
+does not enable order execution, and `MT5_AUTO_TRADING_ENABLED` remains `false`.
+
+After any change, operators must restart the dashboard, API, and collector
+processes for the new environment to take effect. The API contract is unchanged:
+this is an in-dashboard Streamlit feature and does not add an HTTP endpoint.
+
 | رتبه | کد | وضعیت | گیت لازم برای عبور |
 |---:|---|---|---|
 | 1 | P0.1 | مسدودِ پس از preflight | read-only، readiness و dry-run محدود سبز؛ نماد واقعی `XAUUSD_l` است، اما EA/ZeroMQ، پذیرش broker، reconciliation و evidence circuit breaker runtime هنوز باقی است؛ اجرای سفارش مجاز نیست |
