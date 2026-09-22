@@ -16,3 +16,16 @@ def test_environment_manager_access_uses_constant_time_comparison(monkeypatch):
 
     assert dashboard_app._dashboard_env_access_allowed("expected") is True
     assert dashboard_app._dashboard_env_access_allowed("wrong") is False
+
+
+def test_sensitive_environment_widget_state_is_cleared_after_submit(monkeypatch):
+    """Raw replacement values must not remain in Streamlit session state."""
+    dashboard_app.st.session_state["dashboard_env_sensitive_API_TOKEN"] = "secret"
+    dashboard_app.st.session_state["dashboard_env_admin_token"] = "admin-secret"
+
+    dashboard_app._clear_sensitive_environment_inputs(
+        ["API_TOKEN", "DATABASE_URL"]
+    )
+
+    assert "dashboard_env_sensitive_API_TOKEN" not in dashboard_app.st.session_state
+    assert "dashboard_env_admin_token" not in dashboard_app.st.session_state

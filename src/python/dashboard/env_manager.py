@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 import re
 import shutil
+import tempfile
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,6 +18,7 @@ _LINE_PATTERN = re.compile(
     r"(?P<value>.*?)(?P<newline>\r?\n)?$"
 )
 _MASKED_VALUE = "********"
+_ENV_MUTATION_LOCK = threading.RLock()
 _SENSITIVE_PARTS = (
     "PASSWORD",
     "SECRET",
@@ -24,6 +27,16 @@ _SENSITIVE_PARTS = (
     "PRIVATE_KEY",
     "ACCESS_KEY",
 )
+_SENSITIVE_DATABASE_KEYS = {
+    "DATABASE_URL",
+    "DATABASE_URI",
+    "DB_URL",
+    "DB_URI",
+    "POSTGRES_URL",
+    "POSTGRES_URI",
+    "SQLALCHEMY_DATABASE_URL",
+    "SQLALCHEMY_DATABASE_URI",
+}
 _DEMO_PROFILE = {
     "APP_ENV": "development",
     "MT5_DEMO_ENABLED": "true",
@@ -60,7 +73,11 @@ def is_sensitive_key(key: str) -> bool:
     """Return whether a setting name should have its value hidden."""
 
     normalized = key.upper()
-    return any(part in normalized for part in _SENSITIVE_PARTS)
+    return (
+        normalized in _SENSITIVE_DATABASE_KEYS
+        or normalized.endswith(("DATABASE_URL", "DATABASE_URI"))
+        or any(part in normalized for part in _SENSITIVE_PARTS)
+    )
 
 
 def mask_value(value: str) -> str:
@@ -130,77 +147,84 @@ class EnvironmentManager:
     def update(self, values: Mapping[str, str | None]) -> None:
         """Update settings while preserving omitted or explicitly null values."""
 
-        self._validate_values(values)
-        original = (
-            self.env_path.read_text(encoding="utf-8")
-            if self.env_path.is_file()
-            else ""
-        )
-        current = {
-            entry.key: entry.value for entry in self._parse_text(original)
-        }
-        requested: dict[str, str] = {}
-        for key, value in values.items():
-            if value is None:
-                continue
-            if is_sensitive_key(key) and value == _MASKED_VALUE:
-                if key in current:
+        with _ENV_MUTATION_LOCK:
+            self._validate_values(values)
+            original = (
+                self.env_path.read_text(encoding="utf-8")
+                if self.env_path.is_file()
+                else ""
+            )
+            current = {
+                entry.key: entry.value for entry in self._parse_text(original)
+            }
+            approved = self._approved_keys()
+            requested: dict[str, str] = {}
+            for key, value in values.items():
+                if value is None:
+                    continue
+                if key not in current and key not in approved:
+                    raise EnvironmentManagerError(
+                        f"Environment key is not approved: {key}"
+                    )
+                if is_sensitive_key(key) and value == _MASKED_VALUE:
                     raise EnvironmentManagerError(
                         f"Masked value cannot replace sensitive setting {key}"
                     )
-                raise EnvironmentManagerError(
-                    f"Masked value cannot create sensitive setting {key}"
+                requested[key] = value
+
+            lines = original.splitlines(keepends=True)
+            seen: set[str] = set()
+            updated_lines: list[str] = []
+            for line in lines:
+                parsed = _LINE_PATTERN.match(line)
+                if parsed is None:
+                    updated_lines.append(line)
+                    continue
+                key = parsed.group("key")
+                if key not in requested:
+                    updated_lines.append(line)
+                    continue
+                newline = parsed.group("newline") or ""
+                updated_lines.append(
+                    f"{parsed.group('prefix')}{key}={requested[key]}{newline}"
                 )
-            requested[key] = value
-            current[key] = value
+                seen.add(key)
 
-        lines = original.splitlines(keepends=True)
-        seen: set[str] = set()
-        updated_lines: list[str] = []
-        for line in lines:
-            parsed = _LINE_PATTERN.match(line)
-            if parsed is None:
-                updated_lines.append(line)
-                continue
-            key = parsed.group("key")
-            if key not in requested:
-                updated_lines.append(line)
-                continue
-            newline = parsed.group("newline") or ""
-            updated_lines.append(f"{parsed.group('prefix')}{key}={requested[key]}{newline}")
-            seen.add(key)
-
-        for key, value in requested.items():
-            if key not in seen:
-                updated_lines.append(f"{key}={value}\n")
-        self._write("".join(updated_lines))
+            for key, value in requested.items():
+                if key not in seen:
+                    updated_lines.append(f"{key}={value}\n")
+            self._write("".join(updated_lines))
 
     def delete(self) -> bool:
         """Delete the environment file and report whether it existed."""
 
-        if not self.env_path.exists():
-            return False
-        if not self.env_path.is_file():
-            raise EnvironmentManagerError(f"Environment path is not a file: {self.env_path}")
-        self._backup()
-        try:
-            self.env_path.unlink()
-        except OSError as error:
-            raise EnvironmentManagerError(
-                f"Unable to delete environment file: {self.env_path}"
-            ) from error
-        return True
+        with _ENV_MUTATION_LOCK:
+            if not self.env_path.exists():
+                return False
+            if not self.env_path.is_file():
+                raise EnvironmentManagerError(
+                    f"Environment path is not a file: {self.env_path}"
+                )
+            self._backup()
+            try:
+                self.env_path.unlink()
+            except OSError as error:
+                raise EnvironmentManagerError(
+                    f"Unable to delete environment file: {self.env_path}"
+                ) from error
+            return True
 
     def reset(self, profile: Literal["demo", "live"]) -> None:
         """Apply a safe profile while retaining existing secret values."""
 
-        if profile == "demo":
-            values = build_demo_profile()
-        elif profile == "live":
-            values = build_live_profile()
-        else:
-            raise EnvironmentManagerError(f"Unknown environment profile: {profile}")
-        self.update(values)
+        with _ENV_MUTATION_LOCK:
+            if profile == "demo":
+                values = build_demo_profile()
+            elif profile == "live":
+                values = build_live_profile()
+            else:
+                raise EnvironmentManagerError(f"Unknown environment profile: {profile}")
+            self.update(values)
 
     def _safe_path(self, path: Path) -> Path:
         candidate = path.resolve()
@@ -221,6 +245,22 @@ class EnvironmentManager:
                 raise EnvironmentManagerError(
                     f"Environment value for {key} contains a newline"
                 )
+
+    def _approved_keys(self) -> set[str]:
+        """Read the checked-in environment template as the new-key allowlist."""
+
+        template = self.project_root / ".env.example"
+        if not template.is_file():
+            return set()
+        try:
+            return {
+                entry.key
+                for entry in self._parse_text(template.read_text(encoding="utf-8"))
+            }
+        except OSError as error:
+            raise EnvironmentManagerError(
+                f"Unable to read environment allowlist: {template}"
+            ) from error
 
     @staticmethod
     def _parse_text(text: str) -> list[EnvEntry]:
@@ -250,7 +290,11 @@ class EnvironmentManager:
         if self.env_path.is_file():
             self._backup()
         self.env_path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = self.env_path.with_name(f".{self.env_path.name}.tmp")
+        descriptor, temporary_name = tempfile.mkstemp(
+            prefix=f".{self.env_path.name}.", suffix=".tmp", dir=self.env_path.parent
+        )
+        os.close(descriptor)
+        temporary = Path(temporary_name)
         try:
             temporary.write_text(text, encoding="utf-8", newline="")
             os.replace(temporary, self.env_path)

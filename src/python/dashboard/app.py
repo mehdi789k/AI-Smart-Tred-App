@@ -24,11 +24,11 @@ PROJECT_ROOT = os.path.abspath(
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from src.python.logging_config import get_logger  # noqa: E402
 from src.python.dashboard.env_manager import (  # noqa: E402
     EnvironmentManager,
     EnvironmentManagerError,
 )
+from src.python.logging_config import get_logger  # noqa: E402
 
 logger = get_logger("dashboard")
 _SETTINGS_WRITE_LOCK = threading.Lock()
@@ -585,6 +585,13 @@ def _dashboard_env_access_allowed(password: str) -> bool:
     return hmac.compare_digest(password, configured_token)
 
 
+def _clear_sensitive_environment_inputs(keys: list[str]) -> None:
+    """Remove one-shot environment secrets from Streamlit session state."""
+    for key in keys:
+        st.session_state.pop(f"dashboard_env_sensitive_{key}", None)
+    st.session_state.pop("dashboard_env_admin_token", None)
+
+
 def _render_environment_management() -> None:
     """Render the locked, fail-closed project environment management controls."""
     with st.expander(f"🔐 {t('Secure Environment Management')}", expanded=False):
@@ -599,6 +606,7 @@ def _render_environment_management() -> None:
         password = st.text_input(
             t("Dashboard admin token"),
             type="password",
+            key="dashboard_env_admin_token",
         )
         if st.button(
             t("Unlock environment settings"), key="dashboard_env_unlock"
@@ -610,6 +618,7 @@ def _render_environment_management() -> None:
                 st.success("Environment management unlocked for this session.")
             else:
                 st.error("Invalid dashboard admin token.")
+            _clear_sensitive_environment_inputs([])
         if not st.session_state.get("dashboard_env_unlocked", False):
             st.info(t("Environment settings are locked."))
             return
@@ -661,8 +670,15 @@ def _render_environment_management() -> None:
                     "Restart the running API, dashboard, and collector processes "
                     "for changes to take effect."
                 )
+                _clear_sensitive_environment_inputs(
+                    [entry.key for entry in entries if entry.is_sensitive]
+                )
 
         st.subheader("Destructive and profile operations")
+        st.warning(
+            "Stop active API, collector, broker, and trading services before "
+            "deleting or resetting .env. The dashboard will not stop them automatically."
+        )
         delete_confirmed = st.checkbox(
             "I understand that deleting .env removes the active environment file.",
             key="dashboard_env_delete_confirm",
