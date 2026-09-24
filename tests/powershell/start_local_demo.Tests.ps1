@@ -28,6 +28,22 @@ Describe "Local trading startup safety" {
         $startup | Should Match 'TradingMode -eq "Demo"'
     }
 
+    It "applies the bounded Demo profile without enabling Live mode" {
+        $startup = Get-Content -LiteralPath $startupPath -Raw
+
+        $startup | Should Match '\$env:MT5_ENABLED\s*=\s*"true"'
+        $startup | Should Match '\$env:MT5_DEMO_ENABLED\s*=\s*"true"'
+        $startup | Should Match '\$env:MT5_AUTO_TRADING_ENABLED\s*=\s*"true"'
+        $startup | Should Match '\$env:MT5_LEGACY_ORDER_PATH_ENABLED\s*=\s*"false"'
+        $startup | Should Match '\$env:MT5_DEMO_MAX_TRADE_VOLUME\s*=\s*"0\.01"'
+        $startup | Should Match '\$env:MT5_DEMO_MAX_TRADES_PER_SESSION\s*=\s*"3"'
+        $startup | Should Match '\$env:MT5_DEMO_MAX_DAILY_LOSS\s*=\s*"10"'
+        $startup | Should Match '\$env:MT5_DEMO_REQUIRE_MANUAL_CONFIRMATION\s*=\s*"true"'
+        $startup | Should Match '\$env:MT5_DEMO_AUTO_STOP_ON_ERROR\s*=\s*"true"'
+        $startup | Should Match 'TradingMode -eq "Live"'
+        $startup | Should Match 'MT5_DEMO_ENABLED\s*=\s*"false"'
+    }
+
     It "has valid PowerShell syntax" {
         $tokens = $null
         $parseErrors = $null

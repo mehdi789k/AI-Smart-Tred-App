@@ -40,8 +40,9 @@ _SENSITIVE_DATABASE_KEYS = {
 _DEMO_PROFILE = {
     "APP_ENV": "development",
     "MT5_DEMO_ENABLED": "true",
-    "MT5_ENABLED": "false",
-    "MT5_AUTO_TRADING_ENABLED": "false",
+    "MT5_ENABLED": "true",
+    "MT5_AUTO_TRADING_ENABLED": "true",
+    "MT5_LEGACY_ORDER_PATH_ENABLED": "false",
     "MT5_DEMO_MAX_TRADE_VOLUME": "0.01",
     "MT5_DEMO_MAX_TRADES_PER_SESSION": "3",
     "MT5_DEMO_MAX_DAILY_LOSS": "10",

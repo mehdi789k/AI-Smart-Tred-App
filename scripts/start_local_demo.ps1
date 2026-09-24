@@ -116,17 +116,34 @@ if (Test-Path -LiteralPath $envFile) {
 
 Write-StartupLog "Starting local $TradingMode infrastructure."
 
-# Both selectable modes enable the guarded automated loop. Demo mode remains
-# constrained by its Demo activation limits; Live mode still requires explicit
-# operator confirmation and live-readiness validation above.
-$env:MT5_AUTO_TRADING_ENABLED = "true"
+# Apply the non-secret host-process profile after loading credentials. Live
+# remains available only for explicitly confirmed, manually operated startup.
 $env:MT5_LEGACY_ORDER_PATH_ENABLED = "false"
 if ($TradingMode -eq "Demo") {
+    $env:MT5_ENABLED = "true"
     $env:MT5_DEMO_ENABLED = "true"
+    $env:MT5_AUTO_TRADING_ENABLED = "true"
+    $env:MT5_DEMO_MAX_TRADE_VOLUME = "0.01"
+    $env:MT5_DEMO_MAX_TRADES_PER_SESSION = "3"
+    $env:MT5_DEMO_MAX_DAILY_LOSS = "10"
+    $env:MT5_DEMO_REQUIRE_MANUAL_CONFIRMATION = "true"
+    $env:MT5_DEMO_AUTO_STOP_ON_ERROR = "true"
 } else {
+    $env:MT5_ENABLED = "true"
     $env:MT5_DEMO_ENABLED = "false"
+    $env:MT5_AUTO_TRADING_ENABLED = "false"
 }
 $env:MT5_DASHBOARD_DIRECT = "true"
+Write-StartupLog (
+    "Trading mode=$TradingMode; MT5 enabled=$($env:MT5_ENABLED); " +
+    "auto trading=$($env:MT5_AUTO_TRADING_ENABLED); demo=$($env:MT5_DEMO_ENABLED); " +
+    "legacy order path=$($env:MT5_LEGACY_ORDER_PATH_ENABLED); " +
+    "demo limits volume=$($env:MT5_DEMO_MAX_TRADE_VOLUME), " +
+    "trades/session=$($env:MT5_DEMO_MAX_TRADES_PER_SESSION), " +
+    "daily loss=$($env:MT5_DEMO_MAX_DAILY_LOSS), " +
+    "manual confirmation=$($env:MT5_DEMO_REQUIRE_MANUAL_CONFIRMATION), " +
+    "stop on error=$($env:MT5_DEMO_AUTO_STOP_ON_ERROR)."
+)
 Stop-MarketDataCollectorForDirectDashboard
 
 docker compose up -d timescaledb api prometheus alertmanager grafana
@@ -157,7 +174,6 @@ foreach ($requiredVariable in @("MT5_LOGIN", "MT5_PASSWORD", "MT5_SERVER", "MT5_
     }
 }
 
-$env:MT5_ENABLED = "true"
 $env:STREAMLIT_SERVER_HEADLESS = "true"
 
 function Invoke-TradingReadinessValidation {
