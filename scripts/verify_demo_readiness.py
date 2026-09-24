@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -17,7 +17,9 @@ from python.execution.shadow import ShadowOrderLedger  # noqa: E402
 
 def fetch_json(base_url: str, path: str, timeout: float) -> dict:
     """Fetch one API health document without invoking an order endpoint."""
-    request = Request(f"{base_url.rstrip('/')}{path}", headers={"Accept": "application/json"})
+    request = Request(
+        f"{base_url.rstrip('/')}{path}", headers={"Accept": "application/json"}
+    )
     try:
         with urlopen(request, timeout=timeout) as response:
             if response.status != 200:
@@ -59,17 +61,27 @@ def validate_demo_readiness(
         and dependencies.get("mt5") == "unavailable"
         and data.get("trading", {}).get("allowed") is False
     )
-    if data.get("trading", {}).get("allowed") is not True and not direct_dashboard_unavailable:
+    if (
+        data.get("trading", {}).get("allowed") is not True
+        and not direct_dashboard_unavailable
+    ):
         raise RuntimeError("trading gate is not allowed for Demo validation")
     if dependencies.get("mt5") != "ready" and not direct_dashboard_unavailable:
         raise RuntimeError("MT5 is not connected for Demo validation")
-    allowed_circuit_states = {"armed"} if require_demo_trading else {
-        "armed",
-        "not_configured",
-    }
+    allowed_circuit_states = (
+        {"armed"}
+        if require_demo_trading
+        else {
+            "armed",
+            "not_configured",
+        }
+    )
     if dependencies.get("circuit_breaker") not in allowed_circuit_states:
         raise RuntimeError("circuit breaker is not safe for Demo validation")
-    if demo_symbols is not None and len({symbol.upper() for symbol in demo_symbols}) != 1:
+    if (
+        demo_symbols is not None
+        and len({symbol.upper() for symbol in demo_symbols}) != 1
+    ):
         raise RuntimeError("controlled Demo requires a single allowed symbol")
     if max_daily_loss <= 0 or max_daily_loss > 10.0:
         raise RuntimeError("controlled Demo daily loss limit is unsafe")
@@ -87,9 +99,7 @@ def validate_shadow_readiness(
         max_drawdown=max_drawdown,
     )
     if not report["ready"]:
-        raise RuntimeError(
-            "Shadow readiness failed: " + ", ".join(report["reasons"])
-        )
+        raise RuntimeError("Shadow readiness failed: " + ", ".join(report["reasons"]))
 
 
 def main() -> int:

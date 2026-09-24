@@ -10,13 +10,13 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
+from scripts import verify_demo_readiness
 from src.python.api import zmq_gateway
 from src.python.api.app import create_app
 from src.python.api.zmq_contract import load_contract_document, validate_envelope
 from src.python.api.zmq_gateway import GatewayTimeoutError, MQL5ExecutionGateway
 from src.python.execution.broker_reconciliation import match_order_history
 from src.python.risk.circuit_breaker import CircuitBreaker
-from scripts import verify_demo_readiness
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "tests" / "fixtures" / "zmq_contract_v1.json"
@@ -40,14 +40,18 @@ def test_demo_readiness_checks_only_health_and_readiness_endpoints(
 
     def fake_fetch_json(_base_url: str, path: str, _timeout: float) -> dict:
         calls.append(path)
-        return {"data": {"status": "ok"}} if path == "/health" else {
-            "data": {
-                "status": "ready",
-                "account": {"trade_mode": "real"},
-                "trading": {"allowed": True},
-                "dependencies": {"mt5": "ready", "circuit_breaker": "armed"},
+        return (
+            {"data": {"status": "ok"}}
+            if path == "/health"
+            else {
+                "data": {
+                    "status": "ready",
+                    "account": {"trade_mode": "real"},
+                    "trading": {"allowed": True},
+                    "dependencies": {"mt5": "ready", "circuit_breaker": "armed"},
+                }
             }
-        }
+        )
 
     monkeypatch.setattr(verify_demo_readiness, "fetch_json", fake_fetch_json)
     health = verify_demo_readiness.fetch_json("http://demo", "/health", 1.0)
@@ -214,7 +218,11 @@ def test_duplicate_idempotency_key_does_not_create_second_order() -> None:
         "dry_run": True,
     }
     with TestClient(
-        create_app(gateway=gateway, allowed_symbols=frozenset({"XAUUSD"}))
+        create_app(
+            gateway=gateway,
+            allowed_symbols=frozenset({"XAUUSD"}),
+            production_mode=False,
+        )
     ) as client:
         first = client.post(
             "/api/v1/signals/demo-duplicate/execute",
