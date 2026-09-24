@@ -42,6 +42,29 @@ account or credentials.
 
 ## Execute and capture evidence
 
+Before any automatic Demo start, run the readiness helper in its explicit
+trading mode:
+
+```powershell
+py -3 scripts\verify_demo_readiness.py `
+  --base-url http://127.0.0.1:8000 `
+  --require-demo-trading `
+  --demo-symbol <exact-Market-Watch-symbol> `
+  --max-daily-loss 10
+```
+
+This mode requires `/ready` to report `account.trade_mode=demo`, connected MT5,
+`trading.allowed=true`, and an armed circuit breaker. Missing, real, contest,
+or unknown identity stops the run. It only reads `/health` and `/ready`; it
+never calls an order endpoint. The expected safe states are `Demo trading
+ready` when all gates pass, or `blocked: account is not verified Demo` /
+`waiting for Demo MT5 readiness` when they do not.
+
+For a dashboard health check when the API cannot access the Windows terminal,
+use `--allow-direct-dashboard` instead. This is read-only and must not be
+combined with `--require-demo-trading`; `mt5=unavailable` in this mode does
+not authorize trading.
+
 1. Run the offline matrix first:
 
    ```powershell

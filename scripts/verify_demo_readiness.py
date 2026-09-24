@@ -37,14 +37,23 @@ def validate_demo_readiness(
     demo_symbols: list[str] | None = None,
     max_daily_loss: float = 10.0,
     allow_direct_dashboard: bool = False,
+    require_demo_trading: bool = False,
 ) -> None:
-    """Fail closed unless the API is alive and trading gates are explicitly safe."""
+    """Validate read-only health or explicitly authorized Demo trading readiness."""
+    if require_demo_trading and allow_direct_dashboard:
+        raise RuntimeError(
+            "direct-dashboard mode cannot authorize automatic Demo trading"
+        )
     if health.get("data", {}).get("status") != "ok":
         raise RuntimeError("API liveness is not healthy")
     data = readiness.get("data", {})
     if data.get("status") != "ready":
         raise RuntimeError("API readiness is not healthy")
     dependencies = data.get("dependencies", {})
+    if require_demo_trading:
+        account = data.get("account", {})
+        if not isinstance(account, dict) or account.get("trade_mode") != "demo":
+            raise RuntimeError("account is not verified Demo")
     direct_dashboard_unavailable = (
         allow_direct_dashboard
         and dependencies.get("mt5") == "unavailable"
@@ -54,7 +63,11 @@ def validate_demo_readiness(
         raise RuntimeError("trading gate is not allowed for Demo validation")
     if dependencies.get("mt5") != "ready" and not direct_dashboard_unavailable:
         raise RuntimeError("MT5 is not connected for Demo validation")
-    if dependencies.get("circuit_breaker") not in {"armed", "not_configured"}:
+    allowed_circuit_states = {"armed"} if require_demo_trading else {
+        "armed",
+        "not_configured",
+    }
+    if dependencies.get("circuit_breaker") not in allowed_circuit_states:
         raise RuntimeError("circuit breaker is not safe for Demo validation")
     if demo_symbols is not None and len({symbol.upper() for symbol in demo_symbols}) != 1:
         raise RuntimeError("controlled Demo requires a single allowed symbol")
@@ -90,6 +103,11 @@ def main() -> int:
         action="store_true",
         help="Allow API-side MT5 unavailability when the Windows dashboard owns MT5.",
     )
+    parser.add_argument(
+        "--require-demo-trading",
+        action="store_true",
+        help="Require explicit Demo identity and armed gates for automatic trading.",
+    )
     parser.add_argument("--shadow-ledger")
     parser.add_argument("--audit-log")
     parser.add_argument("--max-shadow-drawdown", type=float, default=0.0)
@@ -102,6 +120,7 @@ def main() -> int:
         demo_symbols=args.demo_symbols,
         max_daily_loss=args.max_daily_loss,
         allow_direct_dashboard=args.allow_direct_dashboard,
+        require_demo_trading=args.require_demo_trading,
     )
     if args.shadow_ledger:
         validate_shadow_readiness(

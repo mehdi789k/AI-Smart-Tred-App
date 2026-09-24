@@ -16,6 +16,7 @@ from src.python.api.zmq_contract import load_contract_document, validate_envelop
 from src.python.api.zmq_gateway import GatewayTimeoutError, MQL5ExecutionGateway
 from src.python.execution.broker_reconciliation import match_order_history
 from src.python.risk.circuit_breaker import CircuitBreaker
+from scripts import verify_demo_readiness
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "tests" / "fixtures" / "zmq_contract_v1.json"
@@ -30,6 +31,33 @@ def test_demo_replay_guardrails_are_fail_closed() -> None:
     assert replay["replay"]["live_execution_allowed"] is False
     assert replay["replay"]["expected_total_trades"] == 0
     assert replay["replay"]["expected_total_deals"] == 0
+
+
+def test_demo_readiness_checks_only_health_and_readiness_endpoints(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    def fake_fetch_json(_base_url: str, path: str, _timeout: float) -> dict:
+        calls.append(path)
+        return {"data": {"status": "ok"}} if path == "/health" else {
+            "data": {
+                "status": "ready",
+                "account": {"trade_mode": "real"},
+                "trading": {"allowed": True},
+                "dependencies": {"mt5": "ready", "circuit_breaker": "armed"},
+            }
+        }
+
+    monkeypatch.setattr(verify_demo_readiness, "fetch_json", fake_fetch_json)
+    health = verify_demo_readiness.fetch_json("http://demo", "/health", 1.0)
+    readiness = verify_demo_readiness.fetch_json("http://demo", "/ready", 1.0)
+    with pytest.raises(RuntimeError, match="not verified Demo"):
+        verify_demo_readiness.validate_demo_readiness(
+            health, readiness, require_demo_trading=True
+        )
+
+    assert calls == ["/health", "/ready"]
 
 
 def test_contract_matrix_contains_operational_demo_scenarios() -> None:
