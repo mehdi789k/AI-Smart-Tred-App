@@ -1,0 +1,271 @@
+{
+  "symbol": "XRPUSD_l",
+  "timeframe": "M5",
+  "training_date": "2026-09-25T04:11:49.463247",
+  "n_samples": 10000,
+  "data_manifest": {
+    "manifest_version": "1.0",
+    "symbol": "XRPUSD_l",
+    "timeframe": "M5",
+    "source": "json",
+    "requested_years": 2,
+    "required_min_samples": 10000,
+    "required_min_coverage_hours": 720.0,
+    "coverage_hours": 833.3333333333334,
+    "coverage_ratio": 1.1574074074074074,
+    "quality_report_path": "reports\\data_quality\\XRPUSD_l_M5.json",
+    "quality_report_sha256": "07eb112af040ebfb723f08c973c6d44c531a151e6a43d074d2450d696c35fba7",
+    "quality": {
+      "symbol": "XRPUSD_l",
+      "timeframe": "M5",
+      "source": "json",
+      "bars": 10000,
+      "oldest": "2026-08-21T10:15:00+00:00",
+      "newest": "2026-09-25T03:35:00+00:00",
+      "status": "accepted",
+      "expected_gaps": [
+        {
+          "from": "2026-08-23T04:25:00+00:00",
+          "to": "2026-08-23T04:35:00+00:00",
+          "missing_bars": 1
+        }
+      ],
+      "unexpected_gaps": [],
+      "duplicate_timestamps": 0,
+      "timezone_utc": true,
+      "ohlc_valid": true,
+      "coverage_hours": 833.3333333333334,
+      "ingestion_metadata": {
+        "data_dir": "D:\\Nojom mali\\robat metatreder5\\AI Smart Tred App\\market_data",
+        "database_configured": null,
+        "sources": [
+          "json"
+        ],
+        "metadata_fields": [],
+        "metadata_rows": 0,
+        "metadata_present_rows": 0
+      },
+      "ingestion_metadata_coverage": {
+        "present": true,
+        "fields": [
+          "data_dir",
+          "database_configured",
+          "metadata_fields",
+          "metadata_present_rows",
+          "metadata_rows",
+          "sources"
+        ]
+      },
+      "expected_gap_windows": [
+        "23:55-01:05"
+      ]
+    },
+    "label_diagnostics": {
+      "samples": 9949,
+      "counts": {
+        "SELL": 6231,
+        "HOLD": 463,
+        "BUY": 3255
+      },
+      "percentages": {
+        "SELL": 0.6262940999095387,
+        "HOLD": 0.04653734043622475,
+        "BUY": 0.3271685596542366
+      },
+      "class_imbalance": {
+        "warning": true,
+        "threshold": 0.1,
+        "underrepresented_classes": [
+          "HOLD"
+        ]
+      },
+      "hold": {
+        "warning": false,
+        "reason_counts": {
+          "time_barrier": 443,
+          "time_cutoff": 20
+        }
+      },
+      "monthly": {
+        "2026-08": {
+          "samples": 2995,
+          "SELL": 1906,
+          "HOLD": 158,
+          "BUY": 931,
+          "HOLD_pct": 0.05275459098497496
+        },
+        "2026-09": {
+          "samples": 6954,
+          "SELL": 4325,
+          "HOLD": 305,
+          "BUY": 2324,
+          "HOLD_pct": 0.043859649122807015
+        }
+      }
+    },
+    "dataset_version": "bd82d086d1ccc7cfecc4de2174046ee29d2e1300cf5c09a15063de271bc699c5",
+    "generated_at": "2026-09-25T00:40:32.561182+00:00"
+  },
+  "n_features": 47,
+  "features": [
+    "return_1",
+    "return_5",
+    "return_10",
+    "volatility_10",
+    "volatility_20",
+    "high_low_range",
+    "close_position",
+    "sma_20",
+    "sma_50",
+    "price_vs_sma20",
+    "price_vs_sma50",
+    "sma20_vs_sma50",
+    "rsi",
+    "rsi_ma5",
+    "rsi_deviation",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_middle",
+    "bb_std",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "bb_position",
+    "atr",
+    "atr_normalized",
+    "adx",
+    "plus_di",
+    "minus_di",
+    "di_diff",
+    "stoch_k",
+    "stoch_d",
+    "volume_ma10",
+    "volume_ratio",
+    "volume_spike",
+    "swing_high",
+    "swing_low",
+    "dist_from_swing_high",
+    "dist_from_swing_low",
+    "body_size",
+    "body_ratio",
+    "upper_shadow",
+    "lower_shadow",
+    "candle_direction",
+    "is_doji",
+    "engulfing",
+    "prev_body"
+  ],
+  "label_diagnostics": {
+    "samples": 9949,
+    "counts": {
+      "SELL": 6231,
+      "HOLD": 463,
+      "BUY": 3255
+    },
+    "percentages": {
+      "SELL": 0.6262940999095387,
+      "HOLD": 0.04653734043622475,
+      "BUY": 0.3271685596542366
+    },
+    "class_imbalance": {
+      "warning": true,
+      "threshold": 0.1,
+      "underrepresented_classes": [
+        "HOLD"
+      ]
+    },
+    "hold": {
+      "warning": false,
+      "reason_counts": {
+        "time_barrier": 443,
+        "time_cutoff": 20
+      }
+    },
+    "monthly": {
+      "2026-08": {
+        "samples": 2995,
+        "SELL": 1906,
+        "HOLD": 158,
+        "BUY": 931,
+        "HOLD_pct": 0.05275459098497496
+      },
+      "2026-09": {
+        "samples": 6954,
+        "SELL": 4325,
+        "HOLD": 305,
+        "BUY": 2324,
+        "HOLD_pct": 0.043859649122807015
+      }
+    }
+  },
+  "class_weight_strategy": "balanced",
+  "class_weights": {
+    "0": 0.5300608828006088,
+    "1": 7.255208333333333,
+    "2": 1.025018395879323
+  },
+  "metrics": {
+    "xgboost": {
+      "accuracy": 0.5911528150134048,
+      "precision_macro": 0.3826849367387064,
+      "recall_macro": 0.36283365146304347,
+      "f1_macro": 0.34514508637383895,
+      "confusion_matrix": [
+        [
+          773,
+          15,
+          108
+        ],
+        [
+          80,
+          1,
+          13
+        ],
+        [
+          392,
+          2,
+          108
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "SELL",
+        "HOLD",
+        "BUY"
+      ],
+      "classification_report": {
+        "SELL": {
+          "precision": 0.6208835341365462,
+          "recall": 0.8627232142857143,
+          "f1-score": 0.7220924801494629,
+          "support": 896.0
+        },
+        "HOLD": {
+          "precision": 0.05555555555555555,
+          "recall": 0.010638297872340425,
+          "f1-score": 0.017857142857142856,
+          "support": 94.0
+        },
+        "BUY": {
+          "precision": 0.47161572052401746,
+          "recall": 0.2151394422310757,
+          "f1-score": 0.2954856361149111,
+          "support": 502.0
+        },
+        "accuracy": 0.5911528150134048,
+        "macro avg": {
+          "precision": 0.3826849367387064,
+          "recall": 0.36283365146304347,
+          "f1-score": 0.34514508637383895,
+          "support": 1492.0
+        },
+        "weighted avg": {
+          "precision": 0.5350435392169064,
+          "recall": 0.5911528150134048,
+          "f1-score": 0.5341871467641928,
+          "support": 1492.0
+        }
+      }
+    }
+  }
+}

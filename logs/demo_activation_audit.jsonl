@@ -164,3 +164,11 @@
 {"event": "order_accepted", "payload": {"correlation_id": "6afb7a2516ff4a1b", "retcode": 10009, "symbol": "ZECUSD_l", "ticket": 346779830, "volume": 0.5}, "timestamp": 1790296156.8566453}
 {"event": "order_rejected", "payload": {"correlation_id": "ae93402f525340ab", "reason": "Request rejected due to absence of network connection", "rejection_message": "MT5 rejected order (10031): Request rejected due to absence of network connection", "retcode": 10031, "symbol": "ZECUSD_l"}, "timestamp": 1790296256.2767427}
 {"event": "order_rejected", "payload": {"correlation_id": "8acbccf6c9964ce1", "reason": "Request rejected due to absence of network connection", "rejection_message": "MT5 rejected order (10031): Request rejected due to absence of network connection", "retcode": 10031, "symbol": "ZECUSD_l"}, "timestamp": 1790296256.3545332}
+{"event": "order_accepted", "payload": {"correlation_id": "bd81c31ea085463e", "retcode": 10009, "symbol": "ZECUSD_l", "ticket": 346780947, "volume": 0.5}, "timestamp": 1790296455.6350935}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "317beec5dae341be", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790296674.5100527}
+{"event": "order_accepted", "payload": {"correlation_id": "2c6e6ffc16194a1f", "retcode": 10009, "symbol": "ZECUSD_l", "ticket": 346781727, "volume": 0.5}, "timestamp": 1790296788.9368541}
+{"event": "order_accepted", "payload": {"correlation_id": "ac9e50c3a33748ef", "retcode": 10009, "symbol": "ZECUSD_l", "ticket": 346782350, "volume": 0.5}, "timestamp": 1790296879.8617449}
+{"event": "order_accepted", "payload": {"correlation_id": "d2e888da2fbf4a79", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1790297375.6595984}
+{"event": "order_accepted", "payload": {"correlation_id": "058440c0eba7412d", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": null}, "timestamp": 1790297375.6844935}
+{"event": "order_accepted", "payload": {"correlation_id": "a36441e9c1304d86", "retcode": 10009, "symbol": "EURUSD", "ticket": 42, "volume": 0.05}, "timestamp": 1790297375.6862535}
+{"event": "order_outcome_unknown", "payload": {"correlation_id": "22742d20dc264820", "reason": "missing_broker_identifiers", "retcode": 10009, "symbol": null}, "timestamp": 1790297437.1320288}

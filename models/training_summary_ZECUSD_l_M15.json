@@ -1,0 +1,293 @@
+{
+  "symbol": "ZECUSD_l",
+  "timeframe": "M15",
+  "training_date": "2026-09-25T04:35:08.469245",
+  "n_samples": 10000,
+  "data_manifest": {
+    "manifest_version": "1.0",
+    "symbol": "ZECUSD_l",
+    "timeframe": "M15",
+    "source": "json",
+    "requested_years": 2,
+    "required_min_samples": 10000,
+    "required_min_coverage_hours": 720.0,
+    "coverage_hours": 2499.75,
+    "coverage_ratio": 3.471875,
+    "quality_report_path": "reports\\data_quality\\ZECUSD_l_M15.json",
+    "quality_report_sha256": "c57204313dd95615ee54fab298dc2cc501e7330e8ed6e1315d38fb4f61986b08",
+    "quality": {
+      "symbol": "ZECUSD_l",
+      "timeframe": "M15",
+      "source": "json",
+      "bars": 10000,
+      "oldest": "2026-06-13T00:15:00+00:00",
+      "newest": "2026-09-25T04:00:00+00:00",
+      "status": "accepted",
+      "expected_gaps": [],
+      "unexpected_gaps": [],
+      "duplicate_timestamps": 0,
+      "timezone_utc": true,
+      "ohlc_valid": true,
+      "coverage_hours": 2499.75,
+      "ingestion_metadata": {
+        "data_dir": "D:\\Nojom mali\\robat metatreder5\\AI Smart Tred App\\market_data",
+        "database_configured": null,
+        "sources": [
+          "json"
+        ],
+        "metadata_fields": [],
+        "metadata_rows": 0,
+        "metadata_present_rows": 0
+      },
+      "ingestion_metadata_coverage": {
+        "present": true,
+        "fields": [
+          "data_dir",
+          "database_configured",
+          "metadata_fields",
+          "metadata_present_rows",
+          "metadata_rows",
+          "sources"
+        ]
+      },
+      "expected_gap_windows": [
+        "23:55-01:05"
+      ]
+    },
+    "label_diagnostics": {
+      "samples": 9949,
+      "counts": {
+        "SELL": 6311,
+        "HOLD": 497,
+        "BUY": 3141
+      },
+      "percentages": {
+        "SELL": 0.6343351090561865,
+        "HOLD": 0.049954769323550106,
+        "BUY": 0.31571012162026335
+      },
+      "class_imbalance": {
+        "warning": true,
+        "threshold": 0.1,
+        "underrepresented_classes": [
+          "HOLD"
+        ]
+      },
+      "hold": {
+        "warning": false,
+        "reason_counts": {
+          "time_barrier": 477,
+          "time_cutoff": 20
+        }
+      },
+      "monthly": {
+        "2026-06": {
+          "samples": 1678,
+          "SELL": 1142,
+          "HOLD": 99,
+          "BUY": 437,
+          "HOLD_pct": 0.05899880810488677
+        },
+        "2026-07": {
+          "samples": 2976,
+          "SELL": 1979,
+          "HOLD": 101,
+          "BUY": 896,
+          "HOLD_pct": 0.03393817204301075
+        },
+        "2026-08": {
+          "samples": 2976,
+          "SELL": 1783,
+          "HOLD": 172,
+          "BUY": 1021,
+          "HOLD_pct": 0.05779569892473118
+        },
+        "2026-09": {
+          "samples": 2319,
+          "SELL": 1407,
+          "HOLD": 125,
+          "BUY": 787,
+          "HOLD_pct": 0.05390254420008624
+        }
+      }
+    },
+    "dataset_version": "05cca739a6e69a1b4c930b5d9d0ffebb0857104973db90891f4f65fc7ebfac8d",
+    "generated_at": "2026-09-25T01:04:30.198916+00:00"
+  },
+  "n_features": 47,
+  "features": [
+    "return_1",
+    "return_5",
+    "return_10",
+    "volatility_10",
+    "volatility_20",
+    "high_low_range",
+    "close_position",
+    "sma_20",
+    "sma_50",
+    "price_vs_sma20",
+    "price_vs_sma50",
+    "sma20_vs_sma50",
+    "rsi",
+    "rsi_ma5",
+    "rsi_deviation",
+    "macd",
+    "macd_signal",
+    "macd_hist",
+    "bb_middle",
+    "bb_std",
+    "bb_upper",
+    "bb_lower",
+    "bb_width",
+    "bb_position",
+    "atr",
+    "atr_normalized",
+    "adx",
+    "plus_di",
+    "minus_di",
+    "di_diff",
+    "stoch_k",
+    "stoch_d",
+    "volume_ma10",
+    "volume_ratio",
+    "volume_spike",
+    "swing_high",
+    "swing_low",
+    "dist_from_swing_high",
+    "dist_from_swing_low",
+    "body_size",
+    "body_ratio",
+    "upper_shadow",
+    "lower_shadow",
+    "candle_direction",
+    "is_doji",
+    "engulfing",
+    "prev_body"
+  ],
+  "label_diagnostics": {
+    "samples": 9949,
+    "counts": {
+      "SELL": 6311,
+      "HOLD": 497,
+      "BUY": 3141
+    },
+    "percentages": {
+      "SELL": 0.6343351090561865,
+      "HOLD": 0.049954769323550106,
+      "BUY": 0.31571012162026335
+    },
+    "class_imbalance": {
+      "warning": true,
+      "threshold": 0.1,
+      "underrepresented_classes": [
+        "HOLD"
+      ]
+    },
+    "hold": {
+      "warning": false,
+      "reason_counts": {
+        "time_barrier": 477,
+        "time_cutoff": 20
+      }
+    },
+    "monthly": {
+      "2026-06": {
+        "samples": 1678,
+        "SELL": 1142,
+        "HOLD": 99,
+        "BUY": 437,
+        "HOLD_pct": 0.05899880810488677
+      },
+      "2026-07": {
+        "samples": 2976,
+        "SELL": 1979,
+        "HOLD": 101,
+        "BUY": 896,
+        "HOLD_pct": 0.03393817204301075
+      },
+      "2026-08": {
+        "samples": 2976,
+        "SELL": 1783,
+        "HOLD": 172,
+        "BUY": 1021,
+        "HOLD_pct": 0.05779569892473118
+      },
+      "2026-09": {
+        "samples": 2319,
+        "SELL": 1407,
+        "HOLD": 125,
+        "BUY": 787,
+        "HOLD_pct": 0.05390254420008624
+      }
+    }
+  },
+  "class_weight_strategy": "balanced",
+  "class_weights": {
+    "0": 0.513302380425971,
+    "1": 7.587145969498911,
+    "2": 1.0869225967540574
+  },
+  "metrics": {
+    "random_forest": {
+      "accuracy": 0.6085790884718498,
+      "precision_macro": 0.2606008187741452,
+      "recall_macro": 0.31905060358737275,
+      "f1_macro": 0.26678666066696666,
+      "confusion_matrix": [
+        [
+          896,
+          0,
+          67
+        ],
+        [
+          77,
+          0,
+          3
+        ],
+        [
+          437,
+          0,
+          12
+        ]
+      ],
+      "confusion_matrix_labels": [
+        "SELL",
+        "HOLD",
+        "BUY"
+      ],
+      "classification_report": {
+        "SELL": {
+          "precision": 0.6354609929078014,
+          "recall": 0.9304257528556594,
+          "f1-score": 0.7551622418879056,
+          "support": 963.0
+        },
+        "HOLD": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 80.0
+        },
+        "BUY": {
+          "precision": 0.14634146341463414,
+          "recall": 0.026726057906458798,
+          "f1-score": 0.04519774011299435,
+          "support": 449.0
+        },
+        "accuracy": 0.6085790884718498,
+        "macro avg": {
+          "precision": 0.2606008187741452,
+          "recall": 0.31905060358737275,
+          "f1-score": 0.26678666066696666,
+          "support": 1492.0
+        },
+        "weighted avg": {
+          "precision": 0.45419319922478796,
+          "recall": 0.6085790884718498,
+          "f1-score": 0.5010154318021364,
+          "support": 1492.0
+        }
+      }
+    }
+  }
+}

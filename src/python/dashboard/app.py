@@ -142,6 +142,25 @@ def _active_trading_connector() -> bool:
         return False
 
 
+def _auto_connect_mt5() -> bool:
+    """Connect to the configured MT5 terminal when a dashboard session starts."""
+    if mt5_connector is None or not mt5_enabled:
+        return False
+    try:
+        if mt5_connector.is_connected():
+            return True
+        connected = mt5_connector.connect(timeout_ms=5000)
+        if not connected:
+            logger.warning(
+                "Automatic MT5 connection failed: %s",
+                getattr(mt5_connector, "last_connection_error", "unknown error"),
+            )
+        return bool(connected and mt5_connector.is_connected())
+    except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as error:
+        logger.warning("Automatic MT5 connection failed: %s", error)
+        return False
+
+
 _market_watch_process: subprocess.Popen[bytes] | None = None
 _market_watch_log_handle = None
 
@@ -1366,6 +1385,7 @@ if "ml_last_return_code" not in st.session_state:
 if "ml_model_type" not in st.session_state:
     st.session_state.ml_model_type = "Ensemble"
 _poll_ml_process()
+_auto_connect_mt5()
 if (
     MODULES_AVAILABLE
     and bool(st.session_state.saved_settings.get("ml_training_enabled"))

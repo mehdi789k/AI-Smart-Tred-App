@@ -85,3 +85,47 @@ def test_persisted_auto_trading_requires_connected_trade_enabled_account(monkeyp
         dashboard_app, "mt5_connector", Connector(True, "demo", allowed=False)
     )
     assert dashboard_app._active_trading_connector() is False
+
+
+def test_dashboard_refresh_auto_connects_disconnected_mt5(monkeypatch):
+    """A new dashboard session should connect to MT5 without a button click."""
+    class Connector:
+        def __init__(self):
+            self.connect_calls = 0
+            self.connected = False
+
+        def is_connected(self):
+            return self.connected
+
+        def connect(self, **_kwargs):
+            self.connect_calls += 1
+            self.connected = True
+            return True
+
+    connector = Connector()
+    session_state = SimpleNamespace()
+    session_state.get = lambda key, default=None: getattr(session_state, key, default)
+    monkeypatch.setattr(dashboard_app, "mt5_connector", connector)
+    monkeypatch.setattr(dashboard_app.st, "session_state", session_state)
+    monkeypatch.setattr(dashboard_app, "mt5_enabled", True)
+
+    assert dashboard_app._auto_connect_mt5() is True
+    assert connector.connect_calls == 1
+
+
+def test_dashboard_refresh_reports_auto_connect_failure_without_raising(monkeypatch):
+    """A failed automatic connection must leave the dashboard available."""
+    class Connector:
+        def is_connected(self):
+            return False
+
+        def connect(self, **_kwargs):
+            raise RuntimeError("terminal unavailable")
+
+    session_state = SimpleNamespace()
+    session_state.get = lambda key, default=None: getattr(session_state, key, default)
+    monkeypatch.setattr(dashboard_app, "mt5_connector", Connector())
+    monkeypatch.setattr(dashboard_app.st, "session_state", session_state)
+    monkeypatch.setattr(dashboard_app, "mt5_enabled", True)
+
+    assert dashboard_app._auto_connect_mt5() is False
