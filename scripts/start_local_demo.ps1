@@ -1,7 +1,8 @@
 param(
     [ValidateSet("Demo", "Live")]
     [string]$TradingMode = "Demo",
-    [switch]$ConfirmLiveTrading
+    [switch]$ConfirmLiveTrading,
+    [switch]$SkipDashboardWatchdog
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +12,7 @@ $python = "C:\Users\Mehdi-karimiyan\AppData\Local\Programs\Python\Python312\pyth
 $logDirectory = Join-Path $projectRoot "logs"
 $startupLog = Join-Path $logDirectory "local_demo_startup.log"
 $dashboardPidFile = Join-Path $logDirectory "dashboard_windows.pid"
+$watchdogPidFile = Join-Path $logDirectory "dashboard_watchdog_windows.pid"
 $marketDataPidFile = Join-Path $logDirectory "market_watch_windows.pid"
 
 New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
@@ -77,6 +79,41 @@ function Stop-MarketDataCollectorForDirectDashboard {
     }
 }
 
+function Start-DashboardWatchdog {
+    if ($SkipDashboardWatchdog) {
+        return
+    }
+
+    if (Test-Path -LiteralPath $watchdogPidFile) {
+        $watchdogPidText = (Get-Content -LiteralPath $watchdogPidFile -Raw).Trim()
+        $watchdogPid = 0
+        if (
+            [int]::TryParse($watchdogPidText, [ref]$watchdogPid) -and
+            (Get-Process -Id $watchdogPid -ErrorAction SilentlyContinue)
+        ) {
+            return
+        }
+        Remove-Item -LiteralPath $watchdogPidFile -Force -ErrorAction SilentlyContinue
+    }
+
+    $watchdogScript = Join-Path $projectRoot "scripts\run_dashboard_watchdog.ps1"
+    $watchdogLog = Join-Path $logDirectory "dashboard_watchdog_windows.out.log"
+    $watchdogErrorLog = Join-Path $logDirectory "dashboard_watchdog_windows.err.log"
+    $watchdogArguments = (
+        "-NoProfile -ExecutionPolicy Bypass -File `"$watchdogScript`""
+    )
+    $watchdog = Start-Process `
+        -FilePath "powershell.exe" `
+        -ArgumentList $watchdogArguments `
+        -WorkingDirectory $projectRoot `
+        -RedirectStandardOutput $watchdogLog `
+        -RedirectStandardError $watchdogErrorLog `
+        -WindowStyle Hidden `
+        -PassThru
+    Set-Content -Path $watchdogPidFile -Value $watchdog.Id
+    Write-StartupLog "Dashboard watchdog started independently with PID $($watchdog.Id)."
+}
+
 if ($TradingMode -eq "Live") {
     if (-not $ConfirmLiveTrading) {
         throw "Live mode requires -ConfirmLiveTrading. No trading services were started."
@@ -131,7 +168,7 @@ if ($TradingMode -eq "Demo") {
 } else {
     $env:MT5_ENABLED = "true"
     $env:MT5_DEMO_ENABLED = "false"
-    $env:MT5_AUTO_TRADING_ENABLED = "false"
+    $env:MT5_AUTO_TRADING_ENABLED = "true"
 }
 $env:MT5_DASHBOARD_DIRECT = "true"
 Write-StartupLog (
@@ -212,8 +249,8 @@ if ($existingConnection) {
             Set-Content -Path $dashboardPidFile -Value $existingPid
             Invoke-TradingReadinessValidation
             Start-MarketDataCollector
-            Start-Process "http://127.0.0.1:8501"
-            Write-StartupLog "Dashboard is already healthy; health check passed and browser opened."
+            Start-DashboardWatchdog
+            Write-StartupLog "Dashboard is already healthy; health check passed; browser was not reopened."
             exit 0
         }
     } catch {
@@ -259,6 +296,9 @@ if (-not $dashboardReady) {
 
 Invoke-TradingReadinessValidation
 Start-MarketDataCollector
-Start-Process "http://127.0.0.1:8501"
-Write-StartupLog "Local $TradingMode infrastructure and dashboard are healthy; health check passed; browser opened."
+Start-DashboardWatchdog
+Write-StartupLog (
+    "Local $TradingMode infrastructure and dashboard are healthy; " +
+    "health check passed; browser was not opened automatically."
+)
 exit 0

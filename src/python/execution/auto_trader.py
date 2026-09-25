@@ -300,17 +300,32 @@ class AutoTrader:
                     )
                     continue
 
-                # Check if we can open new position
+                # Market entries are unique per symbol; pending limits may coexist.
+                requested_type = str(
+                    signal.metadata.get(
+                        "execution_type", signal.metadata.get("order_type", "MARKET")
+                    )
+                ).upper()
+                order_type = (
+                    OrderType.LIMIT
+                    if requested_type in {"LIMIT", "BUY_LIMIT", "SELL_LIMIT"}
+                    and signal.entry_price is not None
+                    else OrderType.MARKET
+                )
                 if not self.position_manager.can_open_new_position(
                     signal.symbol,
                     volume=0.1,  # Will be calculated properly
                     price=signal.entry_price or current_prices.get(signal.symbol, 0),
+                    order_type=order_type,
+                    direction=signal.direction,
                 ):
                     block_reason = self.position_manager.position_open_block_reason(
                         signal.symbol,
                         volume=0.1,
                         price=signal.entry_price
                         or current_prices.get(signal.symbol, 0),
+                        order_type=order_type,
+                        direction=signal.direction,
                     )
                     self.logger.info(
                         "Cannot open position for %s: %s",
@@ -373,6 +388,10 @@ class AutoTrader:
                                 f"@ {position.entry_price}"
                             )
                     else:
+                        pending_key = order.order_id or (
+                            f"{order.symbol}:{order.direction}:{order.price}"
+                        )
+                        self.position_manager.pending_orders[pending_key] = order
                         self.logger.info(
                             "Pending order accepted: %s %s @ %s",
                             order.direction,

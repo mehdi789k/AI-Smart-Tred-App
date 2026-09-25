@@ -16,6 +16,7 @@ Describe "Local trading startup safety" {
         $startup | Should Match 'TradingMode -eq "Live"'
         $startup | Should Match 'LIVE_TRADING_CONFIRMATION'
         $startup | Should Match 'MT5_DEMO_ENABLED\s*=\s*"false"'
+        $startup | Should Match '(?s)TradingMode -eq "Live".*?\$env:MT5_AUTO_TRADING_ENABLED\s*=\s*"true"'
     }
 
     It "enables the selected mode while keeping legacy routing disabled" {

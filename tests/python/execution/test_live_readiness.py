@@ -33,6 +33,9 @@ def valid_connector(now):
             "server": "LiveBroker",
             "trade_mode": "demo",
             "currency": "USD",
+            "account_trade_allowed": True,
+            "terminal_trade_allowed": True,
+            "terminal_tradeapi_disabled": False,
         },
         symbols={
             "XAUUSD": {
@@ -79,6 +82,42 @@ def test_valid_readiness_is_ready():
     assert report.reasons == ()
 
 
+def test_readiness_requires_account_and_terminal_trade_permissions():
+    now = datetime.now(timezone.utc)
+    connector = valid_connector(now)
+    connector.account.update(
+        account_trade_allowed=False,
+        terminal_trade_allowed=True,
+        terminal_tradeapi_disabled=False,
+    )
+
+    report = validate_live_readiness(
+        connector,
+        expected_login=123,
+        expected_server="LiveBroker",
+        allowed_symbols=frozenset({"XAUUSD"}),
+        now=now,
+    )
+
+    assert report.ready is False
+    assert "account_trade_disabled" in report.reasons
+
+    connector.account.update(
+        account_trade_allowed=True,
+        terminal_trade_allowed=False,
+    )
+    report = validate_live_readiness(
+        connector,
+        expected_login=123,
+        expected_server="LiveBroker",
+        allowed_symbols=frozenset({"XAUUSD"}),
+        now=now,
+    )
+
+    assert report.ready is False
+    assert "terminal_trade_disabled" in report.reasons
+
+
 def test_readiness_rejects_unavailable_and_stale_data():
     now = datetime.now(timezone.utc)
     connector = valid_connector(now - timedelta(seconds=31))
@@ -105,12 +144,42 @@ def test_readiness_rejects_unavailable_and_stale_data():
     assert "XAUUSD:stale_tick" in report.reasons
 
 
-def test_readiness_requires_explicit_demo_trade_mode():
+def test_readiness_accepts_trade_enabled_demo_and_live_accounts():
     now = datetime.now(timezone.utc)
-    for trade_mode in ("real", "contest", None):
-        account = {"login": 123, "server": "LiveBroker"}
-        if trade_mode is not None:
-            account["trade_mode"] = trade_mode
+    for trade_mode in ("demo", "real"):
+        account = {
+            "login": 123,
+            "server": "LiveBroker",
+            "trade_mode": trade_mode,
+            "account_trade_allowed": True,
+            "terminal_trade_allowed": True,
+            "terminal_tradeapi_disabled": False,
+        }
+        report = validate_live_readiness(
+            FakeConnector(
+                account=account,
+                symbols={"XAUUSD": {"bid": 100.0, "ask": 100.2, "timestamp": now}},
+            ),
+            expected_login=123,
+            expected_server="LiveBroker",
+            allowed_symbols=frozenset({"XAUUSD"}),
+            now=now,
+        )
+        assert report.ready is True
+        assert report.reasons == ()
+
+
+def test_readiness_rejects_unsupported_or_unknown_account_mode():
+    now = datetime.now(timezone.utc)
+    for trade_mode in ("contest", None):
+        account = {
+            "login": 123,
+            "server": "LiveBroker",
+            "trade_mode": trade_mode,
+            "account_trade_allowed": True,
+            "terminal_trade_allowed": True,
+            "terminal_tradeapi_disabled": False,
+        }
         report = validate_live_readiness(
             FakeConnector(
                 account=account,
@@ -122,7 +191,7 @@ def test_readiness_requires_explicit_demo_trade_mode():
             now=now,
         )
         assert report.ready is False
-        assert "account_not_demo" in report.reasons
+        assert "account_mode_unsupported" in report.reasons
 
 
 def test_readiness_account_identity_is_redacted_to_known_fields():

@@ -124,13 +124,19 @@ data_manager = _get_dashboard_data_manager()
 mt5_connector = _get_mt5_connector()
 
 
-def _active_demo_connector() -> bool:
-    """Return true only for a connected connector explicitly identified as Demo."""
+def _active_trading_connector() -> bool:
+    """Return true for a connected Demo or Live connector with trade permission."""
     if mt5_connector is None:
         return False
     try:
+        if not mt5_connector.is_connected():
+            return False
+        summary = mt5_connector.get_account_summary()
         return bool(
-            mt5_connector.is_connected() and mt5_connector.is_demo_account()
+            summary.get("trade_mode") in {"demo", "real"}
+            and summary.get("account_trade_allowed") is True
+            and summary.get("terminal_trade_allowed") is True
+            and summary.get("terminal_tradeapi_disabled") is not True
         )
     except (AttributeError, OSError, RuntimeError, TypeError, ValueError):
         return False
@@ -767,6 +773,16 @@ def localize_cycle_error(message: str) -> str:
         ),
         ("MT5 order_send failed", t("MT5 order_send failed")),
         ("MT5 rejected order", t("MT5 rejected order")),
+        (
+            "Trade disabled",
+            "معاملات غیرفعال است",
+        ),
+        (
+            "Trading is disabled by the broker, account, terminal, or symbol; "
+            "verify Algo Trading, account permissions, and the symbol trade mode.",
+            "معاملات توسط کارگزار، حساب، ترمینال یا نماد غیرفعال است؛ "
+            "فعال‌بودن Algo Trading، مجوزهای حساب و حالت معاملاتی نماد را بررسی کنید.",
+        ),
         ("broker_validation_failed", t("broker_validation_failed")),
         ("spread_too_high", t("spread_too_high")),
         ("spread_unavailable", t("spread_unavailable")),
@@ -1394,7 +1410,7 @@ if (
     )
     > time.time()
     and LiveTradingLoop.enabled_by_server()
-    and _active_demo_connector()
+    and _active_trading_connector()
 ):
     st.session_state.trading_active = True
 
@@ -1591,7 +1607,7 @@ st.sidebar.subheader(f"⚡ {t('Trading Control')}")
 live_trading_enabled = (
     MODULES_AVAILABLE
     and LiveTradingLoop.enabled_by_server()
-    and os.getenv("MT5_DEMO_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"}
+    and os.getenv("MT5_ENABLED", "").strip().lower() in {"1", "true", "yes", "on"}
 )
 if st.sidebar.button(
     f"🚀 {t('Start Auto Trading')}",
@@ -1601,6 +1617,13 @@ if st.sidebar.button(
     workflow = get_live_order_workflow()
     if workflow is None or not mt5_connector or not mt5_connector.is_connected():
         st.sidebar.error(t("Auto trading blocked: MT5 is not connected/configured."))
+    elif not bool(
+        mt5_connector.get_account_summary().get("account_trade_allowed", False)
+    ):
+        st.sidebar.error(
+            "Auto trading blocked: MT5 account trade_allowed=false. "
+            "The connected terminal/account is not permitted to send orders."
+        )
     elif not LiveTradingLoop.enabled_by_server():
         st.sidebar.warning(
             t(
@@ -1622,7 +1645,7 @@ if st.sidebar.button(
 if not live_trading_enabled:
     st.sidebar.info(
         t(
-            "Live automation is disabled; Demo Shadow Mode is the only available trading mode."
+        "Live automation is disabled by the server safety gate or MT5 connection settings."
         )
     )
 
@@ -2005,10 +2028,10 @@ if (
                 "auto_trading_restore_blocked",
                 "live trading safety gates are not active",
             )
-        if not _active_demo_connector():
+        if not _active_trading_connector():
             raise LiveOrderRejected(
                 "auto_trading_restore_blocked",
-                "a connected Demo account is required",
+                "a connected Demo or Live account with trade permission is required",
             )
         workflow.restore_automation_authorization(expires_at)
         loop = build_live_trading_loop()
@@ -3632,6 +3655,14 @@ elif page == "Live Trading":
             f" | Status: {connection_label}"
             f" | Last update: {account.get('last_update', '-')}"
         )
+        if account.get("connected") and account.get("account_trade_allowed") is False:
+            st.error(
+                "MT5 account trading permission is disabled "
+                "(account_info.trade_allowed=false). "
+                "MT5 journal indicates investor mode for this account. "
+                "Set MT5_PASSWORD to the trading password (not the investor/read-only "
+                "password), reconnect MT5, and verify trade_allowed=true."
+            )
 
         st.subheader(t("Active Positions"))
         live_positions = get_real_positions_data()

@@ -31,6 +31,22 @@ from .policy import DEFAULT_EXECUTION_POLICY
 logger = logging.getLogger(__name__)
 _CONTROL_STORE_UNSET = object()
 
+_MT5_REJECTION_GUIDANCE = {
+    10017: (
+        "Trading is disabled by the broker, account, terminal, or symbol; "
+        "verify Algo Trading, account permissions, and the symbol trade mode."
+    ),
+}
+
+
+def _format_mt5_rejection(retcode: int, comment: str) -> str:
+    """Build a user-facing rejection while retaining MT5's exact response."""
+    normalized_comment = comment.strip() or "broker_rejected"
+    guidance = _MT5_REJECTION_GUIDANCE.get(retcode)
+    if guidance is None:
+        return f"MT5 rejected order ({retcode}): {normalized_comment}"
+    return f"MT5 rejected order ({retcode}): {normalized_comment}. {guidance}"
+
 
 @dataclass
 class _EphemeralExecutionControlState:
@@ -1734,9 +1750,7 @@ class LiveOrderWorkflow:
             ) from error
         if retcode not in {10008, 10009, 10010}:
             comment = getattr(result, "comment", "")
-            detail = f" ({retcode})"
-            if comment:
-                detail += f": {comment}"
+            rejection_message = _format_mt5_rejection(retcode, str(comment))
             log_event(
                 logger,
                 logging.ERROR,
@@ -1745,6 +1759,7 @@ class LiveOrderWorkflow:
                 symbol=request.get("symbol"),
                 retcode=retcode,
                 reason=comment or "broker_rejected",
+                rejection_message=rejection_message,
             )
             self._audit_logger.write(
                 "order_rejected",
@@ -1752,9 +1767,10 @@ class LiveOrderWorkflow:
                 symbol=request.get("symbol"),
                 reason=comment or "broker_rejected",
                 retcode=retcode,
+                rejection_message=rejection_message,
             )
             raise LiveOrderRejected(
-                "order_rejected", f"MT5 rejected order{detail}", retcode=retcode
+                "order_rejected", rejection_message, retcode=retcode
             )
         order_id = getattr(result, "order", None)
         deal_id = getattr(result, "deal", None)

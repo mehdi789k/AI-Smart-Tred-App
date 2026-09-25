@@ -102,6 +102,16 @@ docker compose up -d timescaledb api prometheus alertmanager grafana
 docker compose --profile dashboard up -d
 ```
 
+برای اجرای محلی ویندوز با health-check و watchdog خودکار که در صورت توقف
+داشبورد آن را دوباره راه‌اندازی می‌کند:
+
+```powershell
+.\scripts\start_local_demo.ps1 -TradingMode Demo
+```
+
+watchdog در `logs/dashboard_watchdog_windows.pid` ثبت می‌شود و با اجرای
+`scripts\stop_local_demo.ps1` همراه داشبورد متوقف خواهد شد.
+
 آموزش مدل با profile مربوطه:
 
 ```powershell

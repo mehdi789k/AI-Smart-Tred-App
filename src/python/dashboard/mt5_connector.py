@@ -177,6 +177,7 @@ class MT5Connection:
                 # Prefer the already logged-in terminal. This is the same
                 # process-safe path used by the market-data collector.
                 result = self._mt5.initialize(
+                    path=terminal_path or None,
                     timeout=timeout_ms,
                 )
                 account = self._mt5.account_info() if result else None
@@ -184,6 +185,7 @@ class MT5Connection:
                     if int(account.login) != int(login) or account.server != server:
                         self._mt5.shutdown()
                         result = self._mt5.initialize(
+                            path=terminal_path or None,
                             login=int(login),
                             password=password,
                             server=server,
@@ -192,6 +194,7 @@ class MT5Connection:
             else:
                 # Connect to running terminal
                 result = self._mt5.initialize(
+                    path=terminal_path or None,
                     timeout=timeout_ms,
                 )
 
@@ -270,6 +273,7 @@ class MT5Connection:
                     "connected": False,
                     "error": "MT5 account information is unavailable",
                 }
+            terminal = self._mt5.terminal_info()
 
             return {
                 "login": account.login,
@@ -277,6 +281,23 @@ class MT5Connection:
                 "trade_mode": normalize_mt5_trade_mode(
                     getattr(account, "trade_mode", None),
                     mt5_module=self._mt5,
+                ),
+                "account_trade_allowed": bool(
+                    getattr(account, "trade_allowed", False)
+                ),
+                "account_trade_expert": bool(
+                    getattr(account, "trade_expert", False)
+                ),
+                "account_trade_status": (
+                    "enabled"
+                    if bool(getattr(account, "trade_allowed", False))
+                    else "disabled_or_investor_mode"
+                ),
+                "terminal_trade_allowed": bool(
+                    getattr(terminal, "trade_allowed", False)
+                ),
+                "terminal_tradeapi_disabled": bool(
+                    getattr(terminal, "tradeapi_disabled", False)
                 ),
                 "balance": float(account.balance),
                 "equity": float(account.equity),
@@ -564,6 +585,14 @@ class MT5Connection:
             return {
                 "name": info.name,
                 "description": info.description,
+                "trade_mode": getattr(info, "trade_mode", None),
+                "order_mode": getattr(info, "order_mode", None),
+                "visible": bool(getattr(info, "visible", False)),
+                "select": bool(getattr(info, "select", False)),
+                "volume_min": getattr(info, "volume_min", None),
+                "volume_max": getattr(info, "volume_max", None),
+                "volume_step": getattr(info, "volume_step", None),
+                "trade_stops_level": getattr(info, "trade_stops_level", None),
                 "bid": tick.bid if tick else info.bid,
                 "ask": tick.ask if tick else info.ask,
                 "spread": (tick.ask - tick.bid) if tick else (info.ask - info.bid),
