@@ -1,6 +1,27 @@
 """Focused tests for the dashboard's locked environment management gate."""
 
+from streamlit.testing.v1 import AppTest
+
 from src.python.dashboard import app as dashboard_app
+
+
+def test_settings_page_renders_secure_environment_management_without_market_watch(
+    monkeypatch,
+):
+    """The env controls must remain visible on the Settings page, even if MT5 is unavailable."""
+    monkeypatch.setenv("DASHBOARD_ADMIN_TOKEN", "admin-token")
+    monkeypatch.setenv("MT5_ENABLED", "false")
+    monkeypatch.setenv("MT5_DASHBOARD_DIRECT", "false")
+
+    app = AppTest.from_file(str(dashboard_app.__file__))
+    app.run(timeout=60)
+    app.sidebar.radio[0].set_value("تنظیمات").run(timeout=60)
+
+    assert len(app.expander) >= 1
+    assert any(
+        getattr(expander, "label", "") == "🔐 مدیریت امن محیط"
+        for expander in app.expander
+    )
 
 
 def test_environment_manager_is_locked_without_admin_token(monkeypatch):

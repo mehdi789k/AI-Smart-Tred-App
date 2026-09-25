@@ -53,6 +53,15 @@ class FakeConnector:
     def is_connected(self):
         return True
 
+    def get_account_summary(self):
+        return {
+            "connected": True,
+            "trade_mode": "real",
+            "account_trade_allowed": True,
+            "terminal_trade_allowed": True,
+            "terminal_tradeapi_disabled": False,
+        }
+
     def get_symbols_list(self, visible_only=True):
         return [{"symbol": "EURUSD"}]
 
@@ -128,6 +137,24 @@ def test_server_gate_and_confirmation_are_required(monkeypatch):
     with pytest.raises(LiveOrderRejected) as error:
         loop.start(token)
     assert error.value.code == "auto_trading_gate_disabled"
+
+
+def test_start_rejects_connected_account_without_trade_permission(monkeypatch):
+    loop, workflow = make_loop()
+    monkeypatch.setenv("MT5_AUTO_TRADING_ENABLED", "true")
+    loop.connector.get_account_summary = lambda: {
+        "connected": True,
+        "trade_mode": "real",
+        "account_trade_allowed": False,
+        "terminal_trade_allowed": True,
+        "terminal_tradeapi_disabled": False,
+    }
+    token = workflow.request_confirmation("start_auto_trading")
+
+    with pytest.raises(LiveOrderRejected) as error:
+        loop.start(token)
+
+    assert error.value.code == "account_trade_disabled"
     assert not loop.active
 
 

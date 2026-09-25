@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
+from scripts import verify_demo_readiness
 from src.python.api import zmq_gateway
 from src.python.api.app import create_app
 from src.python.api.zmq_contract import load_contract_document, validate_envelope
@@ -30,6 +31,37 @@ def test_demo_replay_guardrails_are_fail_closed() -> None:
     assert replay["replay"]["live_execution_allowed"] is False
     assert replay["replay"]["expected_total_trades"] == 0
     assert replay["replay"]["expected_total_deals"] == 0
+
+
+def test_demo_readiness_checks_only_health_and_readiness_endpoints(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+
+    def fake_fetch_json(_base_url: str, path: str, _timeout: float) -> dict:
+        calls.append(path)
+        return (
+            {"data": {"status": "ok"}}
+            if path == "/health"
+            else {
+                "data": {
+                    "status": "ready",
+                    "account": {"trade_mode": "real"},
+                    "trading": {"allowed": True},
+                    "dependencies": {"mt5": "ready", "circuit_breaker": "armed"},
+                }
+            }
+        )
+
+    monkeypatch.setattr(verify_demo_readiness, "fetch_json", fake_fetch_json)
+    health = verify_demo_readiness.fetch_json("http://demo", "/health", 1.0)
+    readiness = verify_demo_readiness.fetch_json("http://demo", "/ready", 1.0)
+    with pytest.raises(RuntimeError, match="not verified Demo"):
+        verify_demo_readiness.validate_demo_readiness(
+            health, readiness, require_demo_trading=True
+        )
+
+    assert calls == ["/health", "/ready"]
 
 
 def test_contract_matrix_contains_operational_demo_scenarios() -> None:
@@ -186,7 +218,11 @@ def test_duplicate_idempotency_key_does_not_create_second_order() -> None:
         "dry_run": True,
     }
     with TestClient(
-        create_app(gateway=gateway, allowed_symbols=frozenset({"XAUUSD"}))
+        create_app(
+            gateway=gateway,
+            allowed_symbols=frozenset({"XAUUSD"}),
+            production_mode=False,
+        )
     ) as client:
         first = client.post(
             "/api/v1/signals/demo-duplicate/execute",

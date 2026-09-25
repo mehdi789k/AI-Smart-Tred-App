@@ -73,6 +73,7 @@ htmlcov/
 
 # Runtime shadow-trading ledger
 data/shadow_orders.jsonl
+data/ml_scheduler.lock
 
 # Database backup artifacts
 backups/

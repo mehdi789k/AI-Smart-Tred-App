@@ -14,6 +14,19 @@ $watchdogLog = Join-Path $logDirectory "dashboard_watchdog.log"
 $dashboardPidFile = Join-Path $logDirectory "dashboard_windows.pid"
 $healthUri = "http://127.0.0.1:8501/_stcore/health"
 
+New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
+
+$watchdogMutex = New-Object System.Threading.Mutex($false, "Global\SmartMT5DashboardWatchdog")
+try {
+    if (-not $watchdogMutex.WaitOne(0)) {
+        Add-Content -Path $watchdogLog -Value "$(Get-Date -Format o) Another dashboard watchdog is already running."
+        exit 0
+    }
+} catch {
+    $watchdogMutex.Dispose()
+    throw "Unable to acquire dashboard watchdog single-instance lock: $($_.Exception.Message)"
+}
+
 if ($IntervalSeconds -lt 5) {
     throw "IntervalSeconds must be at least 5."
 }
@@ -24,8 +37,6 @@ if ($MaxConsecutiveRestarts -lt 1) {
     throw "MaxConsecutiveRestarts must be positive."
 }
 
-New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
-
 function Write-WatchdogLog {
     param([string]$Message)
 
@@ -33,38 +44,40 @@ function Write-WatchdogLog {
 }
 
 function Get-DashboardProcess {
-    if (-not (Test-Path -LiteralPath $dashboardPidFile)) {
-        return $null
+    $candidatePids = @()
+    if (Test-Path -LiteralPath $dashboardPidFile) {
+        $pidText = (Get-Content -LiteralPath $dashboardPidFile -Raw).Trim()
+        $dashboardPid = 0
+        if ([int]::TryParse($pidText, [ref]$dashboardPid)) {
+            $candidatePids += $dashboardPid
+        } else {
+            Write-WatchdogLog "Ignoring malformed dashboard PID file."
+        }
     }
 
-    $pidText = (Get-Content -LiteralPath $dashboardPidFile -Raw).Trim()
-    $dashboardPid = 0
-    if (-not [int]::TryParse($pidText, [ref]$dashboardPid)) {
-        Write-WatchdogLog "Ignoring malformed dashboard PID file."
-        return $null
+    $candidatePids += @(
+        Get-NetTCPConnection -LocalPort 8501 -State Listen -ErrorAction SilentlyContinue |
+            Select-Object -ExpandProperty OwningProcess
+    )
+
+    foreach ($candidatePid in ($candidatePids | Select-Object -Unique)) {
+        $process = Get-Process -Id $candidatePid -ErrorAction SilentlyContinue
+        if (-not $process) {
+            continue
+        }
+
+        $commandLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $candidatePid" `
+            -ErrorAction SilentlyContinue).CommandLine
+        if ($commandLine -match "streamlit|dashboard[\\/]app\.py") {
+            Set-Content -Path $dashboardPidFile -Value $candidatePid
+            return $process
+        }
     }
 
-    $process = Get-Process -Id $dashboardPid -ErrorAction SilentlyContinue
-    if (-not $process) {
-        return $null
-    }
-
-    $commandLine = (Get-CimInstance Win32_Process -Filter "ProcessId = $dashboardPid" `
-        -ErrorAction SilentlyContinue).CommandLine
-    if ($commandLine -notmatch "streamlit|dashboard[\\/]app\.py") {
-        Write-WatchdogLog "PID $dashboardPid is not the expected Dashboard process."
-        return $null
-    }
-
-    return $process
+    return $null
 }
 
 function Test-DashboardHealthy {
-    $process = Get-DashboardProcess
-    if (-not $process) {
-        return $false
-    }
-
     try {
         $response = Invoke-WebRequest -UseBasicParsing -Uri $healthUri -TimeoutSec 5
         return $response.StatusCode -eq 200
@@ -75,10 +88,16 @@ function Test-DashboardHealthy {
 
 function Start-DashboardRecovery {
     Write-WatchdogLog "Dashboard unhealthy; invoking controlled startup."
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $startupScript
-    if ($LASTEXITCODE -ne 0) {
-        throw "Dashboard startup failed with exit code $LASTEXITCODE"
-    }
+    $startupArguments = (
+        "-NoProfile -ExecutionPolicy Bypass -File `"$startupScript`" " +
+        "-SkipDashboardWatchdog"
+    )
+    Start-Process `
+        -FilePath "powershell.exe" `
+        -ArgumentList $startupArguments `
+        -WorkingDirectory $projectRoot `
+        -WindowStyle Hidden `
+        -PassThru | Out-Null
 }
 
 Write-WatchdogLog "Dashboard watchdog started."
@@ -98,8 +117,12 @@ while ($true) {
 
     $consecutiveRestarts++
     if ($consecutiveRestarts -gt $MaxConsecutiveRestarts) {
-        Write-WatchdogLog "Restart limit reached; watchdog stopped fail-closed."
-        exit 1
+        Write-WatchdogLog (
+            "Restart threshold reached; continuing with controlled retry " +
+            "after the next interval."
+        )
+        Start-Sleep -Seconds ([Math]::Min($IntervalSeconds * 4, 120))
+        $consecutiveRestarts = 0
     }
 
     try {

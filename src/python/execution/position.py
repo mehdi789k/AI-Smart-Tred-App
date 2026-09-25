@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from ..logging_config import get_logger
 from ..risk.break_even import BreakEvenConfig, BreakEvenDecision, apply_break_even
-from .trading import Order
+from .trading import Order, OrderType
 
 logger = get_logger("execution.position")
 
@@ -452,36 +452,54 @@ class PositionManager:
             "daily_trades": self.daily_trades,
         }
 
-    def can_open_new_position(self, symbol: str, volume: float, price: float) -> bool:
+    def can_open_new_position(
+        self,
+        symbol: str,
+        volume: float,
+        price: float,
+        order_type: OrderType = OrderType.MARKET,
+        direction: Optional[str] = None,
+    ) -> bool:
         """Check if a new position can be opened."""
         self._check_daily_reset()
 
-        # Check if position already exists
-        if symbol in self.positions:
+        if self.position_open_block_reason(
+            symbol,
+            volume,
+            price,
+            order_type=order_type,
+            direction=direction,
+        ):
             return False
-
-        # Check max positions
-        if len(self.positions) >= self.max_positions:
-            return False
-
-        # Check daily loss limit
-        if self.daily_pnl <= -self.daily_loss_limit:
-            return False
-
-        # Check total exposure
-        new_exposure = volume * price
-        if self.get_total_exposure() + new_exposure > self.max_total_exposure:
-            return False
-
         return True
 
     def position_open_block_reason(
-        self, symbol: str, volume: float, price: float
+        self,
+        symbol: str,
+        volume: float,
+        price: float,
+        order_type: OrderType = OrderType.MARKET,
+        direction: Optional[str] = None,
     ) -> Optional[str]:
         """Explain why a proposed position cannot be opened."""
         self._check_daily_reset()
-        if symbol in self.positions:
+        normalized_symbol = symbol.strip().upper()
+        if order_type == OrderType.MARKET and normalized_symbol in {
+            open_symbol.upper() for open_symbol in self.positions
+        }:
             return "position_already_open_for_symbol"
+        if order_type == OrderType.LIMIT:
+            for pending in self.pending_orders.values():
+                if (
+                    pending.symbol.strip().upper() == normalized_symbol
+                    and pending.order_type == OrderType.LIMIT
+                    and (
+                        direction is None
+                        or pending.direction.upper() == direction.upper()
+                    )
+                    and pending.price == price
+                ):
+                    return "pending_order_already_exists"
         if len(self.positions) >= self.max_positions:
             return "max_positions_reached"
         if self.daily_pnl <= -self.daily_loss_limit:

@@ -244,13 +244,36 @@ The page never displays raw secrets. Sensitive values are masked, and a
 replacement is entered into a blank field without revealing the existing value.
 Every replacement, profile reset, or deletion creates a timestamped backup under
 the configured `backups/` directory before the mutation. The `demo` reset applies
-conservative demo settings and disables MT5/live execution. The `live` reset
-changes only the environment mode while preserving existing sensitive values; it
-does not enable order execution, and `MT5_AUTO_TRADING_ENABLED` remains `false`.
+bounded Demo settings; it enables the host Dashboard's guarded MT5 path but does
+not authorize execution by itself. The Dashboard must verify an explicit Demo
+trade mode, account identity, symbol/tick readiness, and circuit-breaker state
+before starting the loop. The `live` reset changes only the environment mode
+while preserving existing sensitive values; it does not enable order execution,
+and `MT5_AUTO_TRADING_ENABLED` remains `false`.
 
 After any change, operators must restart the dashboard, API, and collector
 processes for the new environment to take effect. The API contract is unchanged:
 this is an in-dashboard Streamlit feature and does not add an HTTP endpoint.
+
+### Automatic Demo execution state machine
+
+The Windows Dashboard is the only owner of automatic MT5 Demo startup because
+the Docker API cannot safely own the host terminal. Startup proceeds in this
+order:
+
+1. Apply the bounded Demo host profile while preserving credentials.
+2. Connect to the configured terminal and verify the expected login and server.
+3. Require an explicit MT5 Demo trade mode; Real, Contest, missing, or unknown
+   modes fail closed.
+4. Verify the approved symbol is visible with a valid, fresh bid/ask tick.
+5. Verify the circuit breaker and Demo limits are safe.
+6. Start the existing `LiveTradingLoop` through `LiveOrderWorkflow`.
+
+Readiness checks never submit an order. A disconnect, broker-disabled response,
+timeout, unknown outcome, stale data, or failed reconciliation stops the loop
+and clears persisted authorization. The API's `/ready` result may report
+`mt5=unavailable` when the Dashboard owns direct MT5 access; that is not Demo
+trading readiness and cannot authorize an order.
 
 | رتبه | کد | وضعیت | گیت لازم برای عبور |
 |---:|---|---|---|

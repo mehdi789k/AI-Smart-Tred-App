@@ -5,6 +5,8 @@ All notable changes to this project are documented in this file.
 ## [Unreleased]
 
 ### Added
+- Automatic guarded Demo startup from the Windows Dashboard after explicit
+  Demo-account identity and complete MT5 readiness validation.
 - Hardened execution and safety gates around order workflow, daily-loss enforcement, and Demo configuration limits.
 - Durable execution-control state with transactional writes and optimistic version checks.
 - Strict ZeroMQ/EA protocol validation and fail-closed handling for timeouts, malformed responses, and unknown outcomes.
@@ -12,6 +14,8 @@ All notable changes to this project are documented in this file.
 - Recovery drill documentation for staging backup/restore and RTO/RPO interpretation.
 
 ### Improved
+- Demo profile startup now enables only bounded host-side automation; Live
+  remains explicitly disabled and account-mode checks remain fail-closed.
 - Clarified the boundary between local validation and live execution proof.
 - Tightened the role-based auth model for sensitive routes and operational actions.
 - Documented the exact conditions under which Demo execution is allowed and when it remains blocked.
@@ -20,7 +24,8 @@ All notable changes to this project are documented in this file.
 ### Fixed
 - ZeroMQ response contract mismatch in the MQL5/EA path was corrected to prevent false rejection of valid accepted states.
 - Readiness checks were updated to avoid overstating operational readiness without live broker proof.
-- Demo-safe runtime configuration was aligned around bounded symbols, size limits, and disabled auto-trading.
+- Demo-safe runtime configuration was aligned around bounded symbols, size limits,
+  explicit Demo identity, and automatic stop conditions.
 
 ### Security and control note
 - This project remains in a fail-closed configuration.

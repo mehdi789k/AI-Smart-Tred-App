@@ -6,9 +6,9 @@ Backend با Python/FastAPI، پایگاه‌داده PostgreSQL/TimescaleDB و 
 ZeroMQ ساخته شده است. داشبورد Streamlit و پایش Prometheus/Grafana به‌صورت
 اختیاری در Docker Compose اجرا می‌شوند.
 
-> **هشدار ایمنی:** این پروژه نرم‌افزار معاملاتی است. حالت پیش‌فرض dry-run و
-> auto-trading خاموش است. تا وقتی شواهد مستقل برای EA، broker، reconciliation و
-> circuit breaker ثبت نشده، هیچ سفارش واقعی یا Demo را فعال نکنید.
+> **هشدار ایمنی:** این پروژه نرم‌افزار معاملاتی است. حالت Live همیشه
+> fail-closed است. اجرای خودکار Demo فقط پس از تشخیص قطعی حساب Demo، اتصال
+> MT5، readiness نماد و tick، و تأیید همهٔ محدودیت‌های ریسک انجام می‌شود.
 
 ## وضعیت فعلی
 
@@ -101,6 +101,16 @@ docker compose up -d timescaledb api prometheus alertmanager grafana
 ```powershell
 docker compose --profile dashboard up -d
 ```
+
+برای اجرای محلی ویندوز با health-check و watchdog خودکار که در صورت توقف
+داشبورد آن را دوباره راه‌اندازی می‌کند:
+
+```powershell
+.\scripts\start_local_demo.ps1 -TradingMode Demo
+```
+
+watchdog در `logs/dashboard_watchdog_windows.pid` ثبت می‌شود و با اجرای
+`scripts\stop_local_demo.ps1` همراه داشبورد متوقف خواهد شد.
 
 آموزش مدل با profile مربوطه:
 
@@ -211,20 +221,48 @@ credential، تأیید دستی و evidence عملیاتی جداگانه نی�
 | `DATABASE_URL` | اتصال database | در production الزامی |
 | `API_AUTH_TOKEN` | token سازگاری API | خالی و fail-closed |
 | `API_AUTH_JWT_SECRET` | secret توکن کوتاه‌عمر | خالی و fail-closed |
-| `MT5_ENABLED` | اتصال runtime به MT5 | `false` |
-| `MT5_AUTO_TRADING_ENABLED` | اجازه auto trading | `false` |
-| `MT5_DEMO_ENABLED` | فعال‌سازی demo محدود | `false` |
+| `MT5_ENABLED` | اتصال runtime به MT5 | `false`؛ راه‌انداز Demo روی host آن را فعال می‌کند |
+| `MT5_AUTO_TRADING_ENABLED` | اجازه auto trading | `false`؛ فقط پروفایل محدود Demo روی host آن را فعال می‌کند |
+| `MT5_DEMO_ENABLED` | فعال‌سازی demo محدود | `false`؛ راه‌انداز Demo آن را فعال می‌کند |
 | `MT5_LIVE_SYMBOLS` | whitelist نمادها | `XAUUSD_l` در نمونه |
 | `MT5_MAX_POSITION_VOLUME` | سقف حجم پوزیشن | `0.02` در نمونه |
 | `MT5_MAX_DAILY_LOSS` | سقف زیان روزانه | `10` در نمونه |
 | `ZMQ_EXECUTION_ENDPOINT` | endpoint ارتباط با EA | `tcp://127.0.0.1:5555` |
 | `SHADOW_LEDGER_PATH` | ledger حالت shadow | `data/shadow_orders.jsonl` |
 
-اسکریپت `scripts/start_local_demo.ps1` برای حساب Demo محلی، گیت
-`MT5_AUTO_TRADING_ENABLED=true` را فعال می‌کند؛ این override فقط در مسیر Demo
-است و تأیید دستی، whitelist نماد، سقف حجم، سقف زیان روزانه و circuit breaker
-همچنان الزامی هستند. مقدار امن پیش‌فرض در `.env.example` برای سایر مسیرها
-همچنان `false` باقی می‌ماند.
+اسکریپت `scripts/start_local_demo.ps1` به‌صورت پیش‌فرض زیرساخت، داشبورد Windows و
+پروفایل محدود ترید خودکار Demo را راه‌اندازی می‌کند. داشبورد فقط وقتی loop را
+خودکار شروع می‌کند که حساب MT5 صریحاً Demo تشخیص داده شود، login/server منطبق
+باشد، نماد whitelist قابل مشاهده و tick تازه باشد، و circuit breaker مسلح باشد.
+مسیر Live عمداً fail-closed
+است و فقط با هر دو گزینه
+`-TradingMode Live -ConfirmLiveTrading` و متغیر فرایندی
+`LIVE_TRADING_CONFIRMATION=I_UNDERSTAND_LIVE_TRADING_RISK` ادامه می‌یابد؛
+در غیر این صورت هیچ سرویس تریدی راه‌اندازی نمی‌شود. در هر دو حالت، مسیر قدیمی
+سفارش خاموش است و whitelist نماد، سقف حجم، سقف زیان روزانه، magic number و
+circuit breaker باید توسط backend تأیید شوند. credentialها فقط از `.env` یا
+محیط فرایند خوانده می‌شوند و هرگز در log چاپ نمی‌شوند.
+
+در حالت `MT5_DASHBOARD_DIRECT=true`، اتصال native به MT5 در داشبورد Windows
+مالکیت می‌شود و API داخل کانتینر ممکن است در `/ready` مقدار
+`mt5=unavailable` بدهد. این حالت فقط readiness زیرساخت را تأیید می‌کند؛
+مجوز ترید خودکار فقط از readiness خود داشبورد و تشخیص صریح Demo صادر می‌شود.
+حساب Real، Contest، حالت نامشخص، tick قدیمی، نماد نامرئی، قطع اتصال یا نتیجهٔ
+نامعلوم broker باعث توقف fail-closed می‌شود.
+
+نمونه اجرای Demo:
+
+```powershell
+.\scripts\start_local_demo.ps1
+```
+
+برای Live، ابتدا محیط را کنترل‌شده و با نظارت operator آماده کنید؛ این دستور
+به‌صورت دائمی و بدون بررسی سلامت، ارسال سفارش را فعال نمی‌کند:
+
+```powershell
+$env:LIVE_TRADING_CONFIRMATION = "I_UNDERSTAND_LIVE_TRADING_RISK"
+.\scripts\start_local_demo.ps1 -TradingMode Live -ConfirmLiveTrading
+```
 
 ## نکات توسعه
 
@@ -248,3 +286,7 @@ credential، تأیید دستی و evidence عملیاتی جداگانه نی�
 - [راهنمای تست‌ها](tests/README.md)
 - [راهنمای فیلترها](filters/README.md)
 - [تغییرات پروژه](CHANGELOG.md)
+cand dashboard مالک اتصال native به MT5 باشد، API داخل کانتینر ممکن است در
+`/ready` مقدار `mt5=unavailable` بدهد؛ startup در این حالت فقط با
+`--allow-direct-dashboard` داخلی، readiness زیرساخت را تأیید می‌کند و تا اتصال
+موفق داشبورد به MT5، ترید مجاز تلقی نمی‌شود.

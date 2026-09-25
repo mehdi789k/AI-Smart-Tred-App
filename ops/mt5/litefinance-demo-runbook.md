@@ -7,8 +7,9 @@ account or credentials.
 ## Preconditions
 
 - Obtain project-owner and second-approver confirmation for the Demo window.
-- Confirm `MT5_AUTO_TRADING_ENABLED=false` until the final, explicitly approved
-  canary step.
+- Confirm the bounded Demo profile is active. Automatic trading remains
+  fail-closed until the Dashboard verifies the account as Demo and all
+  readiness and risk gates pass.
 - Use the symbols currently visible in the operator's MT5 **Market Watch**.
   Do not assume that `XAUUSD` or a broker suffix exists; record the exact
   symbol name and select only symbols approved for this run.
@@ -41,6 +42,29 @@ account or credentials.
    the Live flag still false. It is never enabled for replay tests.
 
 ## Execute and capture evidence
+
+Before any automatic Demo start, run the readiness helper in its explicit
+trading mode:
+
+```powershell
+py -3 scripts\verify_demo_readiness.py `
+  --base-url http://127.0.0.1:8000 `
+  --require-demo-trading `
+  --demo-symbol <exact-Market-Watch-symbol> `
+  --max-daily-loss 10
+```
+
+This mode requires `/ready` to report `account.trade_mode=demo`, connected MT5,
+`trading.allowed=true`, and an armed circuit breaker. Missing, real, contest,
+or unknown identity stops the run. It only reads `/health` and `/ready`; it
+never calls an order endpoint. The expected safe states are `Demo trading
+ready` when all gates pass, or `blocked: account is not verified Demo` /
+`waiting for Demo MT5 readiness` when they do not.
+
+For a dashboard health check when the API cannot access the Windows terminal,
+use `--allow-direct-dashboard` instead. This is read-only and must not be
+combined with `--require-demo-trading`; `mt5=unavailable` in this mode does
+not authorize trading.
 
 1. Run the offline matrix first:
 
@@ -88,7 +112,7 @@ circuit breaker or resubmit an unknown order without explicit operator
 review. Escalate any discrepancy; this runbook contains no Live activation
 procedure.
 
-## Windows local read-only auto-start
+## Windows local Demo auto-start
 
 To make the local infrastructure and dashboard available after the current
 Windows user logs on, run this once from the project root:
@@ -106,10 +130,14 @@ startup script ending does not terminate the dashboard or interrupt its
 WebSocket connection. Re-running the startup script is idempotent while the
 dashboard is healthy.
 
-This path is deliberately read-only: `MT5_AUTO_TRADING_ENABLED` and
-`MT5_LEGACY_ORDER_PATH_ENABLED` are forced to `false`. It does not store
-credentials and does not start a broker order canary. To stop the local stack
-manually, run:
+The Dashboard may automatically start the bounded Demo loop after it verifies
+the native MT5 terminal, explicit Demo identity, symbol/tick readiness, and
+risk gates. Live and unknown account modes remain blocked. The
+`MT5_LEGACY_ORDER_PATH_ENABLED` path is forced to `false`; this startup path
+does not store credentials or bypass the guarded order workflow. If MT5 is
+unavailable or any gate is uncertain, the Dashboard stays connected for
+read-only monitoring and no order is sent. To stop the local stack manually,
+run:
 
 ```powershell
 .\scripts\stop_local_demo.ps1

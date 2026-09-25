@@ -76,6 +76,41 @@ class LiveTradingLoop:
             "yes",
         }
 
+    def _validate_trade_permissions(self) -> None:
+        """Reject execution unless MT5 explicitly permits automated trading."""
+        try:
+            summary = self.connector.get_account_summary()
+        except (AttributeError, OSError, RuntimeError, TypeError, ValueError) as error:
+            raise LiveOrderRejected(
+                "account_permissions_unavailable",
+                "MT5 account trading permissions could not be read",
+            ) from error
+        if not isinstance(summary, dict) or summary.get("connected") is False:
+            raise LiveOrderRejected(
+                "account_permissions_unavailable",
+                "MT5 account trading permissions could not be read",
+            )
+        if summary.get("trade_mode") not in {"demo", "real"}:
+            raise LiveOrderRejected(
+                "account_mode_unsupported",
+                "MT5 account mode is not supported for automated trading",
+            )
+        if summary.get("account_trade_allowed") is not True:
+            raise LiveOrderRejected(
+                "account_trade_disabled",
+                "MT5 account trade permission is disabled",
+            )
+        if summary.get("terminal_trade_allowed") is not True:
+            raise LiveOrderRejected(
+                "terminal_trade_disabled",
+                "MT5 terminal trading permission is disabled",
+            )
+        if summary.get("terminal_tradeapi_disabled") is True:
+            raise LiveOrderRejected(
+                "terminal_tradeapi_disabled",
+                "MT5 terminal trade API is disabled",
+            )
+
     def start(self, confirmation_token: str) -> None:
         operation_id = new_correlation_id()
         if not self.enabled_by_server():
@@ -85,6 +120,7 @@ class LiveTradingLoop:
             )
         if not self.connector or not self.connector.is_connected():
             raise LiveOrderRejected("mt5_disconnected", "MT5 is not connected")
+        self._validate_trade_permissions()
         symbols = {symbol.upper() for symbol in self.trader.config.symbols}
         if not symbols or not symbols.issubset(self.workflow.config.allowed_symbols):
             raise LiveOrderRejected(
@@ -122,6 +158,7 @@ class LiveTradingLoop:
             )
         if not self.connector or not self.connector.is_connected():
             raise LiveOrderRejected("mt5_disconnected", "MT5 is not connected")
+        self._validate_trade_permissions()
         self.trader.start()
         self.active = True
         self.started_at = datetime.now(timezone.utc)
@@ -141,6 +178,7 @@ class LiveTradingLoop:
             self.last_status = "inactive"
             return None
         if self._broker_trading_disabled_latch:
+            self.last_status = "broker_trading_disabled"
             self.stop()
             self.last_status = "broker_trading_disabled"
             return None
@@ -157,6 +195,19 @@ class LiveTradingLoop:
         if not self.connector or not self.connector.is_connected():
             self.last_status = "mt5_disconnected"
             log_event(logger, logging.ERROR, "mt5_disconnected", cycle_id=cycle_id)
+            self.stop()
+            return None
+        try:
+            self._validate_trade_permissions()
+        except LiveOrderRejected as error:
+            self.last_status = error.code
+            log_event(
+                logger,
+                logging.ERROR,
+                "account_trading_permissions_blocked",
+                cycle_id=cycle_id,
+                reason=error.code,
+            )
             self.stop()
             return None
         positions = self.connector._mt5.positions_get()
@@ -360,6 +411,7 @@ class LiveTradingLoop:
                 cycle_id=cycle_id,
                 symbols=sorted(self.trader.config.symbols),
             )
+            self.last_status = "broker_trading_disabled"
             self.stop()
             self.last_status = "broker_trading_disabled"
             return result
