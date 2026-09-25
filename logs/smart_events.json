@@ -21687,3 +21687,4 @@
 {"timestamp": "2026-09-25T01:10:33.022481+00:00", "level": "WARNING", "logger": "ai_smart_tred.ml.training", "message": "Class imbalance detected: HOLD below 10.0%", "correlation_id": null, "request_id": null}
 {"timestamp": "2026-09-25T01:10:33.191983+00:00", "level": "INFO", "logger": "ai_smart_tred.ml.trainer", "message": "Data split: Train=6965, Val=1492, Test=1492", "correlation_id": null, "request_id": null}
 {"timestamp": "2026-09-25T01:10:33.282507+00:00", "level": "INFO", "logger": "ai_smart_tred.ml.trainer", "message": "Training XGBoost...", "correlation_id": null, "request_id": null}
+{"timestamp": "2026-09-25T01:11:25.874103+00:00", "level": "INFO", "logger": "ai_smart_tred.ml.trainer", "message": "XGB CV Accuracy: 0.5566 (+/- 0.0864)", "correlation_id": null, "request_id": null}
