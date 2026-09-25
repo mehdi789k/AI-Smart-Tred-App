@@ -1,7 +1,7 @@
 {
   "symbol": "ZECUSD_l",
   "timeframe": "M5",
-  "training_date": "2026-09-25T04:38:27.871411",
+  "training_date": "2026-09-25T04:41:57.169845",
   "n_samples": 10000,
   "data_manifest": {
     "manifest_version": "1.0",
@@ -104,7 +104,7 @@
       }
     },
     "dataset_version": "56793241acda8848e78fbd9e78adcff2a5ccf70b29448da13d23483863b03ca4",
-    "generated_at": "2026-09-25T01:08:13.853619+00:00"
+    "generated_at": "2026-09-25T01:10:33.187937+00:00"
   },
   "n_features": 47,
   "features": [
@@ -206,26 +206,26 @@
     "2": 0.9779556304408874
   },
   "metrics": {
-    "random_forest": {
-      "accuracy": 0.6628686327077749,
-      "precision_macro": 0.4213862289101687,
-      "recall_macro": 0.3423645940226944,
-      "f1_macro": 0.28934817347771186,
+    "xgboost": {
+      "accuracy": 0.6152815013404825,
+      "precision_macro": 0.3944938971571997,
+      "recall_macro": 0.387433125121529,
+      "f1_macro": 0.38911342273494903,
       "confusion_matrix": [
         [
-          971,
-          0,
+          752,
+          29,
+          202
+        ],
+        [
+          37,
+          2,
           12
         ],
         [
-          51,
-          0,
-          0
-        ],
-        [
-          440,
-          0,
-          18
+          284,
+          10,
+          164
         ]
       ],
       "confusion_matrix_labels": [
@@ -235,34 +235,34 @@
       ],
       "classification_report": {
         "SELL": {
-          "precision": 0.6641586867305062,
-          "recall": 0.987792472024415,
-          "f1-score": 0.7942740286298569,
+          "precision": 0.700838769804287,
+          "recall": 0.7650050864699899,
+          "f1-score": 0.7315175097276264,
           "support": 983.0
         },
         "HOLD": {
-          "precision": 0.0,
-          "recall": 0.0,
-          "f1-score": 0.0,
+          "precision": 0.04878048780487805,
+          "recall": 0.0392156862745098,
+          "f1-score": 0.043478260869565216,
           "support": 51.0
         },
         "BUY": {
-          "precision": 0.6,
-          "recall": 0.039301310043668124,
-          "f1-score": 0.07377049180327869,
+          "precision": 0.43386243386243384,
+          "recall": 0.35807860262008734,
+          "f1-score": 0.3923444976076555,
           "support": 458.0
         },
-        "accuracy": 0.6628686327077749,
+        "accuracy": 0.6152815013404825,
         "macro avg": {
-          "precision": 0.4213862289101687,
-          "recall": 0.3423645940226944,
-          "f1-score": 0.28934817347771186,
+          "precision": 0.3944938971571997,
+          "recall": 0.387433125121529,
+          "f1-score": 0.38911342273494903,
           "support": 1492.0
         },
         "weighted avg": {
-          "precision": 0.6217613867668148,
-          "recall": 0.6628686327077749,
-          "f1-score": 0.5459505733170583,
+          "precision": 0.5965960524830146,
+          "recall": 0.6152815013404825,
+          "f1-score": 0.603882629538144,
           "support": 1492.0
         }
       }
