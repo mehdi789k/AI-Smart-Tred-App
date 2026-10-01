@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: smart-trader-api
+    metrics_path: /metrics
+    # Docker DNS may return one or more API replica addresses. Prometheus
+    # keeps an instance label for each address and aggregates in queries.
+    dns_sd_configs:
+      - names: ["api"]
+        type: A
+        port: 8000

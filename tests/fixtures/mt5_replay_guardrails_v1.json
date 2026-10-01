@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "replay": {
+    "scenario": "mt5_strategy_tester_safe_replay",
+    "allow_live_trading": false,
+    "enable_zmq": false,
+    "expected_total_trades": 0,
+    "expected_total_deals": 0,
+    "live_execution_allowed": false,
+    "required_inputs": [
+      "InpAllowLiveTrading=false",
+      "InpEnableZmq=false",
+      "InpMagicNumber=26090901",
+      "InpSymbolWhitelist=XAUUSD"
+    ],
+    "required_safety_checks": [
+      "symbol whitelist is enforced",
+      "magic number is validated",
+      "daily loss limit is enforced",
+      "dry-run replay does not create real positions"
+    ]
+  },
+  "cases": [
+    {
+      "name": "strategy_tester_live_trade_disabled",
+      "input": {
+        "allow_live_trading": false,
+        "enable_zmq": false
+      },
+      "expected": {
+        "status": "accepted",
+        "accepted": true,
+        "requires_reconciliation": false,
+        "hint": "replay should run without sending any real order"
+      },
+      "safety_invariant": "live order execution remains disabled even when replay messages are processed"
+    },
+    {
+      "name": "zmq_is_off_for_replay",
+      "input": {
+        "allow_live_trading": false,
+        "enable_zmq": false
+      },
+      "expected": {
+        "status": "accepted",
+        "accepted": true,
+        "requires_reconciliation": false,
+        "hint": "ZeroMQ remains unreachable for replay mode"
+      },
+      "safety_invariant": "replay mode never opens a writable broker connection"
+    },
+    {
+      "name": "no_real_deal_can_be_created",
+      "input": {
+        "allow_live_trading": false,
+        "enable_zmq": false,
+        "expected_total_trades": 0,
+        "expected_total_deals": 0
+      },
+      "expected": {
+        "status": "accepted",
+        "accepted": true,
+        "requires_reconciliation": false,
+        "hint": "total trades and total deals must remain zero"
+      },
+      "safety_invariant": "the replay harness is fail-closed and must never create a live deal"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "py .github/hooks/project_checks.py --event session-start"
+      }
+    ]
+  }
+}

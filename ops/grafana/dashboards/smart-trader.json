@@ -1,0 +1,44 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": false,
+  "panels": [
+    {
+      "title": "API Availability",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [{"expr": "sum(up{job=\"smart-trader-api\"})", "legendFormat": "up"}],
+      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+    },
+    {
+      "title": "HTTP 5xx Rate",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [{"expr": "sum(rate(http_5xx_total[5m]))", "legendFormat": "5xx/s"}],
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+    },
+    {
+      "title": "MT5 Connectivity",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [{"expr": "max(mt5_health_configured) == 0 or min(mt5_connected)", "legendFormat": "connected"}],
+      "fieldConfig": {"defaults": {"min": 0, "max": 1, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+    },
+    {
+      "title": "Circuit Breaker",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [{"expr": "max(circuit_breaker_configured) == 0 or max(circuit_breaker_tripped)", "legendFormat": "tripped"}],
+      "fieldConfig": {"defaults": {"min": 0, "max": 1, "unit": "short"}, "overrides": []},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+    }
+  ],
+  "schemaVersion": 39,
+  "title": "Smart Trader Operational Overview",
+  "uid": "smart-trader-operational",
+  "version": 1
+}

@@ -1,0 +1,296 @@
+{
+  "schema_version": "1.0",
+  "cases": [
+    {
+      "name": "heartbeat",
+      "request": {
+        "schema_version": "1.0",
+        "message_id": "case-heartbeat-001",
+        "message_type": "heartbeat",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "correlation_id": "corr-heartbeat-001",
+        "source": "python",
+        "payload": {
+          "status": "alive"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "accepted": true,
+        "requires_reconciliation": false
+      },
+      "safety_invariant": "heartbeat is informational and never executes an order"
+    },
+    {
+      "name": "accepted_order",
+      "request": {
+        "schema_version": "1.0",
+        "message_id": "case-accepted-001",
+        "message_type": "order_request",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "correlation_id": "corr-accepted-001",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "accepted": true,
+        "requires_reconciliation": false
+      },
+      "safety_invariant": "the order payload must be validated before execution and allowed_symbols must be enforced"
+    },
+    {
+      "name": "rejected_order",
+      "request": {
+        "schema_version": "1.0",
+        "message_id": "case-rejected-001",
+        "message_type": "order_request",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "correlation_id": "corr-rejected-001",
+        "source": "python",
+        "payload": {
+          "action": "sell",
+          "symbol": "EURUSD",
+          "volume": 1.0,
+          "stop_loss": 1.0,
+          "take_profit": 1.2,
+          "magic": 26090901
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "accepted": false,
+        "requires_reconciliation": false
+      },
+      "safety_invariant": "unsupported symbol or invalid risk parameters must reject without sending a live order"
+    },
+    {
+      "name": "duplicate_message",
+      "request": {
+        "schema_version": "1.0",
+        "message_id": "case-duplicate-001",
+        "message_type": "order_request",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "correlation_id": "corr-duplicate-001",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "accepted": false,
+        "requires_reconciliation": true,
+        "duplicate_message_id": "case-duplicate-001"
+      },
+      "safety_invariant": "duplicate message_id must be rejected and tracked for idempotency reconciliation"
+    },
+    {
+      "name": "timeout",
+      "request": {
+        "schema_version": "1.0",
+        "message_id": "case-timeout-001",
+        "message_type": "order_request",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "correlation_id": "corr-timeout-001",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901
+        }
+      },
+      "expected": {
+        "status": "timeout",
+        "accepted": false,
+        "requires_reconciliation": true
+      },
+      "safety_invariant": "a timeout must never be interpreted as accepted and must trigger reconciliation before retries"
+    },
+    {
+      "name": "unknown_outcome",
+      "request": {
+        "schema_version": "1.0",
+        "message_id": "case-unknown-001",
+        "message_type": "order_request",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "correlation_id": "corr-unknown-001",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901
+        }
+      },
+      "expected": {
+        "status": "unknown",
+        "accepted": false,
+        "requires_reconciliation": true
+      },
+      "safety_invariant": "unknown broker outcomes are fail-closed and never promoted to accepted without reconciliation"
+    },
+    {
+      "name": "invalid_envelope",
+      "request": {
+        "schema_version": "1.0",
+        "message_id": "case-invalid-envelope-001",
+        "message_type": "order_request",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "accepted": false,
+        "requires_reconciliation": false
+      },
+      "safety_invariant": "malformed envelope data must be rejected before any execution is attempted"
+    },
+    {
+      "name": "unsupported_schema",
+      "request": {
+        "schema_version": "2.0",
+        "message_id": "case-unsupported-schema-001",
+        "message_type": "order_request",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "correlation_id": "corr-unsupported-schema-001",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "accepted": false,
+        "requires_reconciliation": false
+      },
+      "safety_invariant": "unsupported versions must fail closed and never be processed by the gateway"
+    },
+    {
+      "name": "dry_run",
+      "request": {
+        "schema_version": "1.0",
+        "message_id": "case-dry-run-001",
+        "message_type": "order_request",
+        "sent_at": "2026-09-17T00:00:00Z",
+        "correlation_id": "corr-dry-run-001",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901,
+          "dry_run": true
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "accepted": true,
+        "requires_reconciliation": false
+      },
+      "safety_invariant": "dry_run requests may simulate execution but must not place a live order"
+    },
+    {
+      "name": "reconciliation_evidence",
+      "request": {
+        "schema_version": "1.0",
+        "message_type": "order_request",
+        "sent_at": "2026-09-18T00:00:00Z",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901
+        },
+        "message_id": "case-reconciliation-001",
+        "correlation_id": "corr-reconciliation-001"
+      },
+      "expected": {
+        "status": "unknown",
+        "accepted": false,
+        "requires_reconciliation": true
+      },
+      "safety_invariant": "reconciliation must retain broker evidence and require operator review before resolution"
+    },
+    {
+      "name": "restart_state",
+      "request": {
+        "schema_version": "1.0",
+        "message_type": "heartbeat",
+        "sent_at": "2026-09-18T00:00:00Z",
+        "source": "python",
+        "payload": {
+          "status": "alive"
+        },
+        "message_id": "case-restart-001",
+        "correlation_id": "corr-restart-001"
+      },
+      "expected": {
+        "status": "accepted",
+        "accepted": true,
+        "requires_reconciliation": false
+      },
+      "safety_invariant": "restart recovery requires explicit reconnect and must not replay an order automatically"
+    },
+    {
+      "name": "circuit_breaker",
+      "request": {
+        "schema_version": "1.0",
+        "message_type": "order_request",
+        "sent_at": "2026-09-18T00:00:00Z",
+        "source": "python",
+        "payload": {
+          "action": "buy",
+          "symbol": "XAUUSD",
+          "volume": 0.01,
+          "stop_loss": 2490.0,
+          "take_profit": 2520.0,
+          "magic": 26090901
+        },
+        "message_id": "case-circuit-breaker-001",
+        "correlation_id": "corr-circuit-breaker-001"
+      },
+      "expected": {
+        "status": "rejected",
+        "accepted": false,
+        "requires_reconciliation": false
+      },
+      "safety_invariant": "circuit-breaker activation rejects new orders until an operator reset is recorded"
+    }
+  ]
+}

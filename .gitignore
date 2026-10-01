@@ -1,0 +1,28 @@
+# Local credentials and environment files
+.env
+.env.*
+!.env.example
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local worktrees and editor tooling state
+.worktrees/
+.superpowers/
+.playwright-mcp/
+
+# Local data and generated artifacts
+data/
+market_data/
+models/
+logs/
+reports/
+backups/
+backtest_results/

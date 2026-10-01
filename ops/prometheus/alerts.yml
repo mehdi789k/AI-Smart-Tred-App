@@ -1,0 +1,83 @@
+groups:
+  - name: smart-trader-operational
+    rules:
+      - alert: SmartTraderApiDown
+        expr: up{job="smart-trader-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: Smart Trader API is unavailable
+          description: Prometheus cannot scrape the API replica.
+
+      - alert: SmartTraderHttp5xxBurst
+        expr: sum(rate(http_5xx_total[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Smart Trader API has elevated HTTP 5xx errors
+          description: The API is returning more than 0.1 5xx responses per second.
+
+      - alert: SmartTraderMt5Disconnected
+        expr: max(mt5_health_configured) == 1 and min(mt5_connected) == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: MT5 connection is unavailable
+          description: MT5 connectivity is unavailable on at least one API process.
+
+      - alert: SmartTraderCircuitBreakerTripped
+        expr: max(circuit_breaker_configured) == 1 and max(circuit_breaker_tripped) == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Trading circuit breaker is tripped
+          description: New orders must remain blocked until operator recovery.
+
+      - alert: SmartTraderOrderRejections
+        expr: sum(increase(order_rejections_total[5m])) >= 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Trading orders are being rejected
+          description: One or more order requests were rejected by a safety gate.
+
+      - alert: SmartTraderGatewayTimeouts
+        expr: sum(increase(mt5_gateway_timeouts_total[5m])) >= 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: MT5 execution gateway timed out
+          description: The MT5 gateway did not acknowledge an execution request.
+
+      - alert: SmartTraderStaleSignals
+        expr: sum(increase(signal_stale_total[5m])) >= 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Stale trading signals are being rejected
+          description: Signals exceeded the freshness window and were blocked.
+
+      - alert: SmartTraderDuplicateIdempotency
+        expr: sum(increase(idempotency_duplicates_total[5m])) >= 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Duplicate order requests detected
+          description: Idempotency prevented a repeated order request.
+
+      - alert: SmartTraderDataGaps
+        expr: sum(increase(data_gaps_total[5m])) >= 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Market data gaps detected
+          description: Missing nominal OHLCV periods were detected.

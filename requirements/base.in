@@ -1,0 +1,8 @@
+# Shared runtime dependencies for the Smart MT5 Trading System.
+SQLAlchemy
+aiosqlite
+numpy
+pandas
+scikit-learn
+joblib
+python-dotenv

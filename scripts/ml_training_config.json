@@ -1,0 +1,60 @@
+{
+  "symbols": ["XAUUSD_l", "EURUSD", "GBPUSD"],
+  "timeframes": ["M15", "H1", "H4"],
+  "years_of_data": 2,
+  "min_samples": 10000,
+  
+  "feature_engineering": {
+    "use_rsi": true,
+    "use_macd": true,
+    "use_bollinger": true,
+    "use_atr": true,
+    "use_adx": true,
+    "use_stochastic": true,
+    "use_ichimoku": false,
+    "use_volume": true,
+    "use_smc_features": true,
+    "use_candle_patterns": true
+  },
+  
+  "triple_barrier": {
+    "profit_target_multiplier": 2.0,
+    "stop_loss_multiplier": 1.0,
+    "time_barrier_bars": 20
+  },
+  
+  "models": {
+    "model_type": "ensemble",
+    "random_forest": {
+      "n_estimators": 200,
+      "max_depth": 15
+    },
+    "xgboost": {
+      "n_estimators": 300,
+      "max_depth": 8,
+      "learning_rate": 0.05
+    }
+  },
+  
+  "training": {
+    "test_size": 0.15,
+    "val_size": 0.15,
+    "cv_folds": 5,
+    "random_state": 42,
+    "use_hyperparameter_tuning": true,
+    "n_trials": 50
+  },
+  "class_weight_strategy": "balanced",
+  "hold_warning_threshold": 0.7,
+  "class_imbalance_warning_threshold": 0.1,
+  "data_quality": {
+    "min_coverage_hours": 720,
+    "gap_tolerance_minutes": 10,
+    "max_unexpected_gaps": 0
+  },
+  
+  "output": {
+    "output_dir": "models",
+    "save_feature_importance": true
+  }
+}

@@ -1,0 +1,25 @@
+SQLAlchemy
+alembic
+asyncpg
+aiosqlite
+numpy<2
+# Newer SciPy releases require NumPy 2.x, which the MT5 host extension cannot use.
+scipy<1.18
+pandas
+scikit-learn
+xgboost==1.7.6
+lightgbm
+optuna
+joblib
+pytest
+pytest-cov
+pytest-asyncio
+ruff==0.16.7
+mypy==2.3.1
+fastapi
+starlette
+uvicorn[standard]
+pyzmq
+prometheus-client
+httpx2
+streamlit

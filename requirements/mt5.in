@@ -1,0 +1,5 @@
+# Host-only dependency. MetaTrader5 is supported on Windows with a local
+# MetaTrader 5 terminal; do not install this file in Linux Docker images.
+MetaTrader5==5.0.47
+# The MetaTrader5 5.0.47 binary extension is built against the NumPy 1.x ABI.
+numpy<2

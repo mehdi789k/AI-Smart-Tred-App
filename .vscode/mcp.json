@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "docker": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@alisaitteke/docker-mcp"
+      ]
+    }
+  }
+}

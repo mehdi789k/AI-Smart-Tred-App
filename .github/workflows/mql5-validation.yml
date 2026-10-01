@@ -1,0 +1,42 @@
+name: MQL5 validation
+
+# Lightweight structural gate for the Expert Advisor sources. MetaEditor is
+# not available on GitHub-hosted runners, so this job runs the deterministic
+# checker in .github/hooks/mql5_structural_check.py (balanced code blocks per
+# preprocessor branch, required EA handlers, fail-closed live-trading guard).
+# The authoritative compile remains the local MetaEditor / Strategy Tester run
+# documented in README.md and docs/CODING_STANDARDS.md.
+
+on:
+  push:
+    paths:
+      - "src/mql5/**"
+      - "tests/mql5/**"
+      - ".github/hooks/mql5_structural_check.py"
+      - ".github/workflows/mql5-validation.yml"
+  pull_request:
+    paths:
+      - "src/mql5/**"
+      - "tests/mql5/**"
+      - ".github/hooks/mql5_structural_check.py"
+      - ".github/workflows/mql5-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  structural:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate MQL5 source structure
+        run: python .github/hooks/mql5_structural_check.py
+      - name: Verify fail-closed live-trading guard keyword present
+        run: |
+          grep -RIl --exclude-dir=.git \
+            -e "ExecutionPolicy\|EXECUTION_POLICY_LIVE_ENABLED\|LIVE_TRADING\|live_trading" \
+            src/mql5 \
+            || { echo "No live-trading guard reference found in src/mql5"; exit 1; }

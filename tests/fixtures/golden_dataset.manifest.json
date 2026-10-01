@@ -1,0 +1,7 @@
+{
+  "dataset_name": "golden_dataset",
+  "format": "csv",
+  "source": "tests/fixtures/golden_dataset.csv",
+  "version": "2026-01",
+  "sha256": "48e5af0c3198146b5636667d4f26dced59dafbddf2a9404c70539d45ba6bb682"
+}

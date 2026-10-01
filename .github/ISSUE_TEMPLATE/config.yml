@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Operational questions and incident coordination
+    url: https://github.com/mehdi789k/smart-mt5-trading-system/discussions
+    about: >-
+      Use Discussions for usage questions, Demo/Live readiness coordination,
+      and non-bug operational topics. Trading-critical bugs and security
+      issues must use the issue templates or private vulnerability reporting.
