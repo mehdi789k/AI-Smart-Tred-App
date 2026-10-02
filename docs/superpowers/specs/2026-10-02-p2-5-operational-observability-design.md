@@ -102,6 +102,10 @@ Prometheus service discovery and internal dashboard access are unchanged.
 Update the deployment guide to find each host port from `docker compose ps api`;
 do not promise that host clients can still use `localhost:8000` while multiple
 replicas are running.
+Keep the single-replica URL references in the README and Docker deployment guide
+accurate by identifying them as the default when port `8000` is available and
+directing operators to `docker compose ps api` when Compose allocates another
+host port or when replicas are scaled out.
 
 ### Failure handling
 
@@ -151,8 +155,9 @@ the cross-replica alerting authority; Prometheus and Alertmanager remain so.
 - `docker-compose.yml` to pass the freshness-map setting into the API
   container and dynamically publish the API host port for scale-out.
 - `ops/prometheus/alerts.yml` and the existing Grafana dashboard.
-- `docs/OBSERVABILITY_DEPLOYMENT_FA.md` for dynamic host-port discovery and
-  `docs/PROJECT_ASSESSMENT_FA.md`.
+- `docs/OBSERVABILITY_DEPLOYMENT_FA.md` for dynamic host-port discovery,
+  `README.md` and `docs/deployment/DOCKER_GUIDE.md` for accurate API URL
+  guidance, and `docs/PROJECT_ASSESSMENT_FA.md`.
 - Focused Python tests for the sampler, metrics, alert rules/configuration, and
   API scrape behavior.
 
