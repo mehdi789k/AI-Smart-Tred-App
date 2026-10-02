@@ -76,7 +76,7 @@ incident به‌صورت کیفی محاسبه شده است. هر مورد تا
 | 4 | P0.4 | بحرانی | نیمه‌کامل؛ credential ناقص اکنون fail-closed است، اما rotation/scan/staging اثبات‌نشده | مالک platform/security | قبل از P0.1 |
 | 5 | P1.5 | بالا | نیمه‌کامل؛ local staging backup/restore و RTO proxy سبز، managed RPO و rollback باز | مالک platform/DBA | P0ها و backup policy |
 | 6 | P1.1 | بالا | تکمیل‌شده در checkout فعلی؛ `ruff check` و `ruff format --check` سبز | مالک Python | پیش‌نیاز P1.2 |
-| 7 | P1.2 | بالا | در validation قبلی سبز بود؛ اجرای جاری Mypy پنج finding در `historical_loader.py` و `ml/registry.py` دارد و باید دوباره بررسی شود | مالک Python | پیش‌نیاز P1.3 |
+| 7 | P1.2 | بالا | تکمیل‌شده در checkout فعلی؛ اجرای جاری Mypy روی 86 فایل بدون خطا | مالک Python | پیش‌نیاز P1.3 |
 | 8 | P1.3 | بالا | تکمیل‌شده محلی؛ Python 3.12 و lock کامل در clean validation سبز | مالک release engineering | P1.1/P1.2 |
 | 9 | P1.4 | بالا | تأییدناپذیر محلی؛ Git metadata موجود نیست | repository owner | P1.1 تا P1.3 |
 | 10 | P2.1–P2.5 | متوسط | P2.1 باز؛ P2.2–P2.4 در checkout تکمیل‌شده؛ P2.5 با suite و قواعد مانیتورینگ محلی تأیید شد؛ گیت‌های P0/P1 عملیاتی همچنان مستقل‌اند | مالک domain مربوط | همهٔ P0 و P1 برای استفادهٔ عملیاتی |
@@ -165,7 +165,5 @@ Strategy Tester فقط baseline fail-closed بدون معامله هستند.
 مقادیر صرفاً آزمایشی سبز و host range برابر `8000-8099`؛
 `promtool check rules ops/prometheus/alerts.yml` برابر **15 rules found**.
 هیچ سرویس Compose یا مسیر سفارش Demo/Live برای این validation اجرا نشد.
-اجرای جاری `py -3.12 -m mypy --follow-imports=skip src/python` پنج finding
-در `src/python/data/historical_loader.py` و `src/python/ml/registry.py` گزارش
-کرد؛ ماژول sampler و اتصال API در آن خروجی خطایی نداشتند. این موارد خارج از
-محدودهٔ P2.5 هستند و گیت کلی type-check تا رفع/ارزیابی آن‌ها سبز محسوب نمی‌شود.
+اجرای `py -3.12 -m mypy --follow-imports=skip src/python` پس از اصلاح type
+metadata و دسترسی type-safe به قفل سیستم‌عامل، روی **86 فایل بدون خطا** سبز شد.

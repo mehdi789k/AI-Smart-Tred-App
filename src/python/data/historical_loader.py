@@ -157,7 +157,7 @@ def _ensure_ingestion_provenance(
     if "schema_version" not in row:
         row["schema_version"] = CANDLE_SCHEMA_VERSION
     if "ingestion_metadata" not in row:
-        metadata = make_ingestion_metadata(
+        metadata: dict[str, Any] = make_ingestion_metadata(
             ingestion_id=ingestion_id,
             received_at=received_at,
             collector_version=COLLECTOR_VERSION,

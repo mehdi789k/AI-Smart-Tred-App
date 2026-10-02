@@ -270,11 +270,14 @@ class ModelRegistry:
                 else:
                     import fcntl
 
-                    fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+                    flock = getattr(fcntl, "flock")
+                    lock_ex = getattr(fcntl, "LOCK_EX")
+                    lock_un = getattr(fcntl, "LOCK_UN")
+                    flock(lock_file.fileno(), lock_ex)
                     try:
                         yield
                     finally:
-                        fcntl.flock(lock_file.fileno(), fcntl.LOCK_UN)
+                        flock(lock_file.fileno(), lock_un)
 
     def _initialize_lock_file(self) -> None:
         """Create a stable lock byte before processes start acquiring it."""
