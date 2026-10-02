@@ -10,9 +10,11 @@ from pathlib import Path
 from typing import Any
 
 try:  # Support both ``python indicators/stochastic.py`` and package imports.
+    from candle_validator import validate_candle_batch_versioned
     from common import highs, load_candles, lows, rolling_mean, true_ranges
     from moving_average import calculate_sma
 except ImportError:  # pragma: no cover - exercised by package-based callers
+    from .candle_validator import validate_candle_batch_versioned
     from .common import highs, load_candles, lows, rolling_mean, true_ranges
 
     def calculate_sma(prices: list[float], period: int) -> list[float | None]:
@@ -52,6 +54,7 @@ def calculate_stochastic(
     bullish trend is present, and then crosses above %D.  ADX and DI are
     calculated here to keep this module usable as a standalone script.
     """
+    candles = validate_candle_batch_versioned(candles)
     if period < 1 or smoothing < 1 or signal_period < 1:
         raise ValueError("stochastic periods must be at least 1")
     if not 0 <= oversold < overbought <= 100:
@@ -192,7 +195,7 @@ def save_stochastic(
     adx_threshold: float = ADX_TREND_THRESHOLD,
     require_di_direction: bool = REQUIRE_DI_DIRECTION,
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     indicators = calculate_stochastic(
         candles,
         period,

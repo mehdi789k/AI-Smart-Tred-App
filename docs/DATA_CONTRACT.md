@@ -156,6 +156,7 @@ diagnostics، نسخهٔ dataset و توزیع labelها است. Dashboard و س
   "volume": 0,
   "spread": 12,
   "source": "mt5",
+  "schema_version": 1,
   "ingestion_metadata": {
     "ingestion_id": "uuid",
     "received_at": "2026-09-04T20:18:00Z",
@@ -165,13 +166,45 @@ diagnostics، نسخهٔ dataset و توزیع labelها است. Dashboard و س
 }
 ```
 
-`timestamp` و `received_at` همیشه timezone-aware و UTC هستند. `source` مقدار
-غیرخالی و قابل ردیابی مانند `mt5`, `mt5_official` یا `replay` است. خروجی
-رسمی CSV/Export ترمینال MT5 باید با adapter
+`schema_version` برای همهٔ کندل‌ها اجباری است و باید عدد صحیح `1` باشد. اگر مقدار
+نامعتبر، ناموجود یا با نسخهٔ جاری mismatch داشته باشد، validator fail-closed
+خطا می‌دهد و هیچ دادهٔ نامعتبر به اندیکاتور یا فیلتر نمی‌رسد. اعتبارسنجی شامل
+وجود و سازگاری OHLC، حجم‌های متناهی و نامنفی، timestampهای UTC یکتا و صعودی،
+`source` واقعی و provenance کامل است. `timestamp` و `received_at` باید
+timezone-aware و UTC باشند. `source` مقدار غیرخالی و قابل ردیابی مانند `mt5`,
+`mt5_official` یا `replay` است؛ مقادیر placeholder مانند `unknown` پذیرفته
+نمی‌شوند. فیلد `collector_version` نسخهٔ برنامه‌ای است که داده را وارد قرارداد
+نسخه‌دار کرده است. خروجی رسمی CSV/Export ترمینال MT5 باید با adapter
 `src/python/data/historical_loader.py` خوانده شود تا نام ستون‌ها، timestamp،
-حجم‌ها و timezone به قرارداد canonical تبدیل شوند. این adapter بدون اتصال
-زنده به ترمینال کار می‌کند و برای هر رکورد `ingestion_id` و زمان دریافت ثبت
-می‌کند.
+حجم‌ها و timezone به قرارداد canonical تبدیل شوند.
+
+مسیرهای download، backfill و export provenance مفقود را در مرز دریافت ایجاد
+می‌کنند، اما مقادیر معتبر از پیش‌موجود در `source`، `schema_version` و
+`ingestion_metadata` را حفظ می‌کنند. مقدار موجود نامعتبر، metadata ناقص یا
+`source` متناقض با منبع صریح عملیات fail-closed رد می‌شود و با metadata تازه
+جایگزین نمی‌گردد.
+
+Validator اصلی در `src/python/indicators/candle_validator.py` قرار دارد و دو
+تابع اصلی آن یعنی `validate_candle_versioned()` و
+`validate_candle_batch_versioned()` هستند. APIهای محاسبهٔ indicator/filter و
+مسیرهای فایل پیش از محاسبه از این validator استفاده می‌کنند. هر ورودی legacy
+بدون schema، source یا provenance کامل رد می‌شود و خطا شمارهٔ ردیف نامعتبر را
+هم در batch نشان می‌دهد.
+
+برای مهاجرت داده‌های قدیمی، اسکریپت زیر، هر کندل legacy را با نسخهٔ جاری
+افزایش می‌دهد:
+
+```bash
+py scripts\migrate_candles_to_versioned.py input.json output.json --source mt5_official --collector-version legacy-importer/1
+```
+
+`--source` باید توسط operator بر اساس منبع واقعی فایل تعیین شود؛ ابزار برای
+legacy file فاقد source، origin را حدس نمی‌زند. `collector_version` در این
+فرمان نسخهٔ importer/migration است، نه ادعای نسخهٔ collector تاریخی. مهاجرت
+یک `ingestion_id` یکتا و `received_at` زمان واقعی اجرای import را ثبت می‌کند؛
+این timestamp جایگزین زمان دریافت تاریخی نیست و مقدارهای provenance موجود را
+حفظ می‌کند. فایل خروجی باید اعتبارسنجی و بازبینی شود پیش از مصرف در
+indicator/filterها.
 
 ### Backfill رسمی MT5 و کنترل overlap
 

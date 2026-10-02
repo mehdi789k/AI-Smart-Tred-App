@@ -4,27 +4,34 @@ import unittest
 from pathlib import Path
 
 from src.python.filters.fomo_filters import _read_entries, calculate_fomo_filter
+from tests.python.indicators.candle_fixtures import versioned_candles
 
 
 class FomoFilterTests(unittest.TestCase):
     def test_buy_after_half_path_is_blocked(self) -> None:
-        candles = [{"close": 106}, {"close": 151}]
+        candles = versioned_candles([{"close": 106}, {"close": 151}])
         result = calculate_fomo_filter(candles, ["buy", "buy"], [100, 100], [200, 200])
         self.assertEqual(result[0]["fomo_filter"], "allow")
         self.assertEqual(result[1]["fomo_filter"], "avoid")
         self.assertGreater(result[1]["fomo_progress"], 0.5)
 
     def test_sell_uses_direction_aware_progress(self) -> None:
-        result = calculate_fomo_filter([{"close": 40}], ["sell"], [100], [0])
+        result = calculate_fomo_filter(
+            versioned_candles([{"close": 40}]), ["sell"], [100], [0]
+        )
         self.assertEqual(result[0]["fomo_filter"], "avoid")
 
     def test_missing_target_is_unknown(self) -> None:
-        result = calculate_fomo_filter([{"close": 110}], ["buy"], [100], [None])
+        result = calculate_fomo_filter(
+            versioned_candles([{"close": 110}]), ["buy"], [100], [None]
+        )
         self.assertEqual(result[0]["fomo_filter"], "unknown")
 
     def test_invalid_target_and_settings_are_rejected(self) -> None:
         with self.assertRaises(ValueError):
-            calculate_fomo_filter([{"close": 100}], ["buy"], [100], [90])
+            calculate_fomo_filter(
+                versioned_candles([{"close": 100}]), ["buy"], [100], [90]
+            )
         with self.assertRaises(ValueError):
             calculate_fomo_filter([], progress_threshold=0)
 

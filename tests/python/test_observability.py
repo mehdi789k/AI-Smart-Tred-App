@@ -44,6 +44,44 @@ def test_alert_manager_deduplicates_until_reset():
     assert len(calls) == 2
 
 
+def test_alert_manager_supports_gauge_thresholds_and_reads_current_values():
+    metrics = MetricsRegistry()
+    metrics.set_gauge("data_freshness_seconds", 180)
+    metrics.set_gauge("account_exposure_ratio", 0.62)
+
+    alerts = AlertManager(
+        metrics,
+        thresholds={
+            "data_freshness_seconds": 120,
+            "account_exposure_ratio": 0.5,
+        },
+    )
+
+    assert metrics.get_gauge("data_freshness_seconds") == 180
+    assert metrics.get_gauge("account_exposure_ratio") == 0.62
+    assert alerts.evaluate() == ["data_freshness_seconds", "account_exposure_ratio"]
+
+
+def test_get_counter_total_sums_all_labeled_series():
+    metrics = MetricsRegistry()
+    metrics.inc("order_rejections_total", 2, labels={"symbol": "EURUSD"})
+    metrics.inc("order_rejections_total", 3, labels={"symbol": "GBPUSD"})
+
+    get_counter_total = getattr(metrics, "get_counter_total", None)
+
+    assert callable(get_counter_total)
+    assert get_counter_total("order_rejections_total") == 5
+
+
+def test_alert_manager_uses_labeled_counter_series_when_unlabeled_series_is_missing():
+    metrics = MetricsRegistry()
+    metrics.inc("order_rejections_total", 2, labels={"symbol": "EURUSD"})
+    metrics.inc("order_rejections_total", 1, labels={"symbol": "GBPUSD"})
+    alerts = AlertManager(metrics, thresholds={"order_rejections_total": 3})
+
+    assert alerts.evaluate() == ["order_rejections_total"]
+
+
 def test_audit_logger_is_separate_and_redacts_secret(tmp_path):
     path = tmp_path / "audit.jsonl"
     AuditLogger(path).write("order_rejected", token="secret", reason="mt5_disconnected")

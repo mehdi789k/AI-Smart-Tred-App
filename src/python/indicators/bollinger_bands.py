@@ -9,6 +9,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from .candle_validator import validate_candle_batch_versioned
 from .common import closes, load_candles
 
 # Customize these values for the desired trading strategy.
@@ -78,7 +79,7 @@ def save_bollinger_bands(
     period: int = BAND_PERIOD,
     deviations: float = STANDARD_DEVIATIONS,
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     indicators = calculate_bollinger_bands(closes(candles), period, deviations)
     symbol, timeframe = _symbol_and_timeframe(input_path)
     timestamp = datetime.now().strftime("%Y%m%d_%H.%M.%S")

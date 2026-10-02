@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .candle_validator import validate_candle_batch_versioned
 from .common import load_candles, rolling_mean
 
 # Customize these values for the desired trading strategy.
@@ -46,6 +47,7 @@ def enrich_candles(
     method: str = MA_METHOD,
     price_field: str = PRICE_FIELD,
 ) -> list[dict[str, Any]]:
+    candles = validate_candle_batch_versioned(candles)
     if method not in {"sma", "ema", "both"}:
         raise ValueError("method must be 'sma', 'ema', or 'both'")
     if price_field not in {"open", "high", "low", "close"}:
@@ -88,7 +90,10 @@ def save_moving_average(
     price_field: str = PRICE_FIELD,
 ) -> Path:
     output_candles = enrich_candles(
-        load_candles(input_path), period, method, price_field
+        validate_candle_batch_versioned(load_candles(input_path)),
+        period,
+        method,
+        price_field,
     )
     symbol, timeframe = _symbol_and_timeframe(input_path)
     timestamp = datetime.now().strftime("%Y%m%d_%H.%M.%S")

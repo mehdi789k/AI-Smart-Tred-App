@@ -9,7 +9,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from src.python.indicators.common import highs, load_candles, lows, rolling_mean, true_ranges
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
+from src.python.indicators.common import (
+    highs,
+    load_candles,
+    lows,
+    rolling_mean,
+    true_ranges,
+)
 
 MA_PERIOD = 200
 MA_METHOD = "ema"
@@ -48,6 +55,7 @@ def calculate_trend_filter(
     weak_threshold: float = ADX_WEAK_THRESHOLD,
 ) -> list[dict[str, Any]]:
     """Return trend direction and actionable filter status for each candle."""
+    candles = validate_candle_batch_versioned(candles)
     if ma_period < 1 or adx_period < 1:
         raise ValueError("ma_period and adx_period must be at least 1")
     if ma_method not in {"sma", "ema"}:
@@ -139,7 +147,7 @@ def _output_path(input_path: Path) -> Path:
 
 
 def save_trend_filter(input_path: Path, **settings: Any) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     filters = calculate_trend_filter(candles, **settings)
     output_path = _output_path(input_path)
     parts = input_path.stem.split("_")

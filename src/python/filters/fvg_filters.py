@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
 from src.python.indicators.common import load_candles
 
 MIN_GAP_SIZE = 0.0
@@ -31,6 +32,7 @@ def calculate_fvg_filter(
     max_path_distance: float = MAX_PATH_DISTANCE,
 ) -> list[dict[str, Any]]:
     """Detect FVGs and delay entries while a relevant gap remains unfilled."""
+    candles = validate_candle_batch_versioned(candles)
     _validate_settings(min_gap_size, max_path_distance)
     if entry_signals is not None and len(entry_signals) != len(candles):
         raise ValueError("entry_signals must have the same length as candles")
@@ -147,7 +149,7 @@ def save_fvg_filter(
     signals_path: Path | None = None,
     **settings: Any,
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     signals: list[str] | None = None
     if signals_path is not None:
         payload = json.loads(signals_path.read_text(encoding="utf-8"))

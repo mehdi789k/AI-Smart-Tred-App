@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .candle_validator import validate_candle_batch_versioned
 from .common import load_candles, rolling_mean
 
 # Customize these values for the desired trading strategy.
@@ -28,6 +29,7 @@ def calculate_volume(
     spike_ratio: float = VOLUME_SPIKE_RATIO,
 ) -> list[dict[str, Any]]:
     """Calculate volume average, ratio, spike state, and price direction."""
+    candles = validate_candle_batch_versioned(candles)
     if period < 1:
         raise ValueError("period must be at least 1")
     if source not in {"tick_volume", "real_volume"}:
@@ -83,7 +85,7 @@ def save_volume(
     source: str = VOLUME_SOURCE,
     spike_ratio: float = VOLUME_SPIKE_RATIO,
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     result = calculate_volume(candles, period, source, spike_ratio)
     symbol, timeframe = _symbol_and_timeframe(input_path)
     timestamp = datetime.now().strftime("%Y%m%d_%H.%M.%S")

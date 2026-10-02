@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
 from src.python.indicators.common import load_candles
 
 PROGRESS_THRESHOLD = 0.50
@@ -26,6 +27,7 @@ def calculate_fomo_filter(
     progress_threshold: float = PROGRESS_THRESHOLD,
 ) -> list[dict[str, Any]]:
     """Block entries when price has already covered the configured path to TP."""
+    candles = validate_candle_batch_versioned(candles)
     if not 0 < progress_threshold <= 1:
         raise ValueError("progress_threshold must be greater than 0 and at most 1")
     size = len(candles)
@@ -128,7 +130,7 @@ def _output_path(input_path: Path) -> Path:
 def save_fomo_filter(
     input_path: Path, entries_path: Path | None = None, **settings: Any
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     signals, prices, targets = _read_entries(entries_path, len(candles))
     values = calculate_fomo_filter(candles, signals, prices, targets, **settings)
     output_path = _output_path(input_path)

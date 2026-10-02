@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
 from src.python.indicators.common import load_candles, rolling_mean, true_ranges
 
 ATR_PERIOD = 14
@@ -83,6 +84,7 @@ def calculate_volatility_time_filter(
     timezone_offset_hours: float = TIMEZONE_OFFSET_HOURS,
 ) -> list[dict[str, Any]]:
     """Combine session, high-impact-news, and low-ATR squeeze checks."""
+    candles = validate_candle_batch_versioned(candles)
     if atr_period < 1 or atr_lookback < 1:
         raise ValueError("atr_period and atr_lookback must be at least 1")
     if not 0 <= atr_low_percentile <= 100 or news_window_minutes < 0:
@@ -160,7 +162,7 @@ def _output_path(input_path: Path) -> Path:
 def save_volatility_time_filter(
     input_path: Path, news_path: Path | None = None, **settings: Any
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     values = calculate_volatility_time_filter(
         candles, load_high_impact_news(news_path), **settings
     )

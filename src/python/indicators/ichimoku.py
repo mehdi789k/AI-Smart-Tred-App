@@ -17,8 +17,10 @@ from pathlib import Path
 from typing import Any
 
 try:  # Works both as ``python indicators/ichimoku.py`` and as a package.
+    from candle_validator import validate_candle_batch_versioned
     from common import highs, load_candles, lows
 except ImportError:  # pragma: no cover - exercised when imported as a package.
+    from .candle_validator import validate_candle_batch_versioned
     from .common import highs, load_candles, lows
 
 
@@ -89,6 +91,7 @@ def calculate_ichimoku(
     Candles inside the Kumo are explicitly labelled ``range`` and can never
     produce a trade signal.
     """
+    candles = validate_candle_batch_versioned(candles)
     _validate_parameters(tenkan, kijun, senkou, displacement, min_cloud_distance)
     if not candles:
         return []
@@ -199,7 +202,7 @@ def save_ichimoku(
     min_cloud_distance: float = MIN_CLOUD_DISTANCE,
 ) -> Path:
     """Write a timestamped result and remove all previous Ichimoku outputs."""
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     indicators = calculate_ichimoku(
         candles, tenkan, kijun, senkou, displacement, min_cloud_distance
     )

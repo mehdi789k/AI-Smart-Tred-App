@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .candle_validator import validate_candle_batch_versioned
 from .common import load_candles
 
 # Customize these values for the desired trading strategy.
@@ -51,6 +52,7 @@ def enrich_candles(
     oversold: float = RSI_OVERSOLD,
     price_field: str = PRICE_FIELD,
 ) -> list[dict[str, Any]]:
+    candles = validate_candle_batch_versioned(candles)
     if not 0 <= oversold < overbought <= 100:
         raise ValueError("thresholds must satisfy 0 <= oversold < overbought <= 100")
     if price_field not in {"open", "high", "low", "close"}:
@@ -94,9 +96,8 @@ def save_rsi(
     oversold: float = RSI_OVERSOLD,
     price_field: str = PRICE_FIELD,
 ) -> Path:
-    output_candles = enrich_candles(
-        load_candles(input_path), period, overbought, oversold, price_field
-    )
+    candles = validate_candle_batch_versioned(load_candles(input_path))
+    output_candles = enrich_candles(candles, period, overbought, oversold, price_field)
     symbol, timeframe = _symbol_and_timeframe(input_path)
     timestamp = datetime.now().strftime("%Y%m%d_%H.%M.%S")
     output_path = input_path.parent / f"{symbol}_rsi_{timeframe}_{timestamp}.json"

@@ -50,6 +50,7 @@ services:
       MT5_DASHBOARD_DIRECT: ${MT5_DASHBOARD_DIRECT:-false}
       ZMQ_EXECUTION_ENDPOINT: ${ZMQ_EXECUTION_ENDPOINT:-tcp://host.docker.internal:5555}
       OBS_METRICS_TOKEN: ${OBS_METRICS_TOKEN:-}
+      OBS_CANDLE_MAX_AGE_SECONDS: ${OBS_CANDLE_MAX_AGE_SECONDS:-}
       ORDER_AUDIT_RETENTION_DAYS: ${ORDER_AUDIT_RETENTION_DAYS:-90}
       BROKER_RESPONSE_RETENTION_DAYS: ${BROKER_RESPONSE_RETENTION_DAYS:-90}
       LOG_RETENTION_DAYS: ${LOG_RETENTION_DAYS:-90}
@@ -58,7 +59,7 @@ services:
       timescaledb:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "8000-8099:8000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:

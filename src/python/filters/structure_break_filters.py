@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
 from src.python.indicators.common import load_candles
 
 PIVOT_LEFT = 2
@@ -87,6 +88,7 @@ def calculate_structure_break_filter(
     min_break_distance: float = MIN_BREAK_DISTANCE,
 ) -> list[dict[str, Any]]:
     """Allow entries only after a confirmed BOS aligned with the HTF direction."""
+    candles = validate_candle_batch_versioned(candles)
     _validate_settings(pivot_left, pivot_right, min_break_distance)
     direction = htf_direction.lower()
     if direction not in {"buy", "sell", "unknown"}:
@@ -188,7 +190,7 @@ def save_structure_break_filter(
     signals_path: Path | None = None,
     **settings: Any,
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     signals: list[str] | None = None
     if signals_path is not None:
         payload = json.loads(signals_path.read_text(encoding="utf-8"))

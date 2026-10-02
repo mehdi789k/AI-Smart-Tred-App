@@ -139,7 +139,17 @@ class FakeConnector:
         return {"spread": 0.2}
 
     def get_historical_candles(self, symbol, timeframe, count):
-        return [{"high": 101.0, "low": 100.0, "close": 100.5} for _ in range(count)]
+        return [
+            {
+                "time": 1_700_000_000 + index * 60,
+                "open": 100.2,
+                "high": 101.0,
+                "low": 100.0,
+                "close": 100.5,
+                "tick_volume": 10,
+            }
+            for index in range(count)
+        ]
 
 
 class ControlStore:

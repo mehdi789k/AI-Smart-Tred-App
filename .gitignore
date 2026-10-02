@@ -18,8 +18,8 @@ venv/
 .superpowers/
 .playwright-mcp/
 
-# Local data and generated artifacts
-data/
+# Local root data and generated artifacts; don't ignore source packages named data.
+/data/
 market_data/
 models/
 logs/

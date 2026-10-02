@@ -20,16 +20,43 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, cast
+from uuid import uuid4
 
 from ..data.database import ConcurrencyConflict
 from ..data.models import utc_now
 from ..indicators.atr import calculate_atr
+from ..indicators.candle_validator import CURRENT_SCHEMA_VERSION
 from ..logging_config import log_event, new_correlation_id
 from ..observability import AuditLogger
 from .policy import DEFAULT_EXECUTION_POLICY
 
 logger = logging.getLogger(__name__)
 _CONTROL_STORE_UNSET = object()
+
+
+def _record_live_mt5_candle_provenance(
+    candles: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Attach acquisition provenance to raw candles returned by the live MT5 connector."""
+    ingestion_id = str(uuid4())
+    received_at = utc_now().isoformat().replace("+00:00", "Z")
+    collector_version = os.getenv("APP_BUILD_VERSION", "local-development").strip()
+    versioned = []
+    for candle in candles:
+        if not isinstance(candle, dict):
+            raise TypeError("MT5 candle must be a dict")
+        row = dict(candle)
+        row.setdefault("schema_version", CURRENT_SCHEMA_VERSION)
+        row.setdefault("source", "mt5_live")
+        if "ingestion_metadata" not in row:
+            row["ingestion_metadata"] = {
+                "ingestion_id": ingestion_id,
+                "received_at": received_at,
+                "collector_version": collector_version,
+            }
+        versioned.append(row)
+    return versioned
+
 
 _MT5_REJECTION_GUIDANCE = {
     10017: (
@@ -1060,7 +1087,8 @@ class LiveOrderWorkflow:
             )
             if hasattr(candles, "to_dict"):
                 candles = candles.reset_index().to_dict("records")
-            values = calculate_atr(list(candles or []), self.config.spread_atr_period)
+            candle_rows = _record_live_mt5_candle_provenance(list(candles or []))
+            values = calculate_atr(candle_rows, self.config.spread_atr_period)
         except (AttributeError, KeyError, TypeError, ValueError, RuntimeError) as error:
             raise LiveOrderRejected(
                 "spread_unavailable", "ATR spread data is invalid"

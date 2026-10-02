@@ -7,10 +7,13 @@ from src.python.filters.intermarket_macro_filters import (
     dxy_filter,
     filter_correlated_positions,
 )
+from tests.python.indicators.candle_fixtures import versioned_candles
 
 
 def series(multiplier: float = 1.0) -> list[dict[str, float]]:
-    return [{"close": 100 + index * multiplier} for index in range(80)]
+    return versioned_candles(
+        [{"close": 100 + index * multiplier} for index in range(80)]
+    )
 
 
 class IntermarketMacroFilterTests(unittest.TestCase):

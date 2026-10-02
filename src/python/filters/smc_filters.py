@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
 from src.python.indicators.common import load_candles
 
 SWEEP_LOOKBACK = 20
@@ -27,6 +28,7 @@ def calculate_liquidity_sweeps(
     reclaim_buffer: float = RECLAIM_BUFFER,
 ) -> list[dict[str, Any]]:
     """Detect bullish support sweeps and bearish resistance sweeps."""
+    candles = validate_candle_batch_versioned(candles)
     if lookback < 2:
         raise ValueError("lookback must be at least 2")
     if not 0 <= min_body_ratio <= 1:
@@ -90,7 +92,7 @@ def _output_path(input_path: Path) -> Path:
 
 
 def save_smc_filter(input_path: Path, **settings: Any) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     sweeps = calculate_liquidity_sweeps(candles, **settings)
     output_path = _output_path(input_path)
     parts = input_path.stem.split("_")

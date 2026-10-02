@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .candle_validator import validate_candle_batch_versioned
 from .common import closes, load_candles, true_ranges
 
 # Customize these values for the desired trading strategy.
@@ -26,6 +27,7 @@ def calculate_atr(
     method: str = ATR_METHOD,
 ) -> list[float | None]:
     """Calculate ATR using Wilder smoothing or a simple moving average."""
+    candles = validate_candle_batch_versioned(candles)
     if period < 1:
         raise ValueError("period must be at least 1")
     if method not in {"wilder", "sma"}:
@@ -80,7 +82,7 @@ def save_atr(
     period: int = ATR_PERIOD,
     method: str = ATR_METHOD,
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     symbol, timeframe = _symbol_and_timeframe(input_path)
     timestamp = datetime.now().strftime("%Y%m%d_%H.%M.%S")
     output_path = input_path.parent / f"{symbol}_atr_{timeframe}_{timestamp}.json"

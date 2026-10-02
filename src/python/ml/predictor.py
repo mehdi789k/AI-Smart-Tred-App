@@ -59,10 +59,15 @@ class MLInferenceService:
     """Load a training artifact once and expose deterministic dashboard-friendly APIs."""
 
     def __init__(
-        self, artifact_path: str | Path, config: MLConfig | None = None
+        self,
+        artifact_path: str | Path,
+        config: MLConfig | None = None,
+        *,
+        expected_artifact_checksum: str | None = None,
     ) -> None:
         self.config = config or MLConfig()
         self.artifact_path = Path(artifact_path)
+        self.expected_artifact_checksum = expected_artifact_checksum
         self.model: Any = None
         self.feature_names: tuple[str, ...] = ()
         self.classes: tuple[Any, ...] = ()
@@ -73,8 +78,15 @@ class MLInferenceService:
         if not self.artifact_path.is_file():
             raise ModelArtifactError(f"model artifact not found: {self.artifact_path}")
         try:
-            with self.artifact_path.open("rb") as fh:
-                artifact = pickle.load(fh)
+            artifact_bytes = self.artifact_path.read_bytes()
+        except Exception as exc:
+            raise ModelArtifactError(f"cannot load model artifact: {exc}") from exc
+        if self.expected_artifact_checksum:
+            actual_checksum = hashlib.sha256(artifact_bytes).hexdigest()
+            if actual_checksum != self.expected_artifact_checksum:
+                raise ModelArtifactError("registered artifact checksum mismatch")
+        try:
+            artifact = pickle.loads(artifact_bytes)
         except Exception as exc:
             raise ModelArtifactError(f"cannot load model artifact: {exc}") from exc
         if (

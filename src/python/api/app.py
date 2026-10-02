@@ -42,6 +42,10 @@ from .auth import (
     Principal,
     require_role,
 )
+from .metrics_sampler import (
+    OperationalMetricsSampler,
+    parse_candle_age_limits,
+)
 from .zmq_gateway import MQL5ExecutionGateway
 
 
@@ -118,6 +122,7 @@ def create_app(
     runtime_database = database or AsyncDatabase(
         os.getenv("DATABASE_URL", "sqlite+aiosqlite:///data/smart_trader.db")
     )
+    candle_age_limits = parse_candle_age_limits(os.getenv("OBS_CANDLE_MAX_AGE_SECONDS"))
     runtime_gateway = gateway or MQL5ExecutionGateway(
         os.getenv("ZMQ_EXECUTION_ENDPOINT", "tcp://127.0.0.1:5555"),
         int(os.getenv("ZMQ_EXECUTION_TIMEOUT_MS", "1000")),
@@ -177,6 +182,9 @@ def create_app(
     if runtime_mt5 is None and runtime_workflow is not None:
         runtime_mt5 = getattr(runtime_workflow, "connector", None)
     metrics = MetricsRegistry()
+    metrics_sampler = OperationalMetricsSampler(
+        getattr(runtime_database, "engine", None), metrics, candle_age_limits
+    )
     alerts = AlertManager(
         metrics,
         thresholds={
@@ -415,6 +423,7 @@ def create_app(
 
         if metrics_token and x_api_key != metrics_token:
             raise HTTPException(status_code=401, detail="unauthorized")
+        await metrics_sampler.collect()
         return PlainTextResponse(
             metrics.render_prometheus(), media_type="text/plain; version=0.0.4"
         )
