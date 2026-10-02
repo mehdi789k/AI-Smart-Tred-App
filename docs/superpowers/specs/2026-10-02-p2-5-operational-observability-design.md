@@ -96,6 +96,13 @@ must explicitly pass this variable through to the API container; putting it in
 the operator's `.env` file alone does not make it available inside the
 container.
 
+In scale-out mode, publish the API's container port `8000` on a dynamically
+assigned host port for each replica. The in-container port remains `8000`, so
+Prometheus service discovery and internal dashboard access are unchanged.
+Update the deployment guide to find each host port from `docker compose ps api`;
+do not promise that host clients can still use `localhost:8000` while multiple
+replicas are running.
+
 ### Failure handling
 
 - A database query error is logged as a structured operational error, marks
@@ -142,9 +149,10 @@ the cross-replica alerting authority; Prometheus and Alertmanager remain so.
   metric series.
 - `.env.example` for the freshness-map setting and its explanation.
 - `docker-compose.yml` to pass the freshness-map setting into the API
-  container.
+  container and dynamically publish the API host port for scale-out.
 - `ops/prometheus/alerts.yml` and the existing Grafana dashboard.
-- `docs/OBSERVABILITY_DEPLOYMENT_FA.md` and `docs/PROJECT_ASSESSMENT_FA.md`.
+- `docs/OBSERVABILITY_DEPLOYMENT_FA.md` for dynamic host-port discovery and
+  `docs/PROJECT_ASSESSMENT_FA.md`.
 - Focused Python tests for the sampler, metrics, alert rules/configuration, and
   API scrape behavior.
 
