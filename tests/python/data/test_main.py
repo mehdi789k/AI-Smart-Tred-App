@@ -76,7 +76,10 @@ def test_data_config_normalizes_docker_postgres_and_symbols():
         mt5_login=123,
         mt5_password="secret",
         mt5_server="default",
-        symbols=("eurusd", " xauusd ",),
+        symbols=(
+            "eurusd",
+            " xauusd ",
+        ),
         timeframes=("m1", "M5"),
         database_url="postgresql://postgres:postgres@db:5432/mt5_data",
     )
@@ -106,6 +109,8 @@ def test_data_config_accepts_none_for_optional_runtime_fields():
     )
 
     assert config.symbols == ()
-    assert tuple(value.value for value in config.timeframes) == tuple(item.value for item in Timeframe)
+    assert tuple(value.value for value in config.timeframes) == tuple(
+        item.value for item in Timeframe
+    )
     assert config.database_url == "postgresql://localhost/mt5_data"
     assert config.zmq_endpoint is None or config.zmq_endpoint.startswith("tcp://")

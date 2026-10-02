@@ -111,7 +111,9 @@ class CollectorHealth:
         try:
             value = json.loads(self.path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as error:
-            raise RuntimeError(f"collector health is unavailable: {self.path}") from error
+            raise RuntimeError(
+                f"collector health is unavailable: {self.path}"
+            ) from error
         if not isinstance(value, dict) or "updated_at" not in value:
             raise RuntimeError("collector health document is invalid")
         return value
@@ -123,12 +125,16 @@ def health_is_stale(payload: dict[str, Any], timeout_seconds: float) -> bool:
     if timeout_seconds <= 0:
         raise ValueError("timeout_seconds must be positive")
     try:
-        updated_at = datetime.fromisoformat(str(payload["updated_at"]).replace("Z", "+00:00"))
+        updated_at = datetime.fromisoformat(
+            str(payload["updated_at"]).replace("Z", "+00:00")
+        )
     except (KeyError, TypeError, ValueError) as error:
         raise ValueError("collector health has an invalid updated_at") from error
     if updated_at.tzinfo is None:
         updated_at = updated_at.replace(tzinfo=timezone.utc)
-    age = (datetime.now(timezone.utc) - updated_at.astimezone(timezone.utc)).total_seconds()
+    age = (
+        datetime.now(timezone.utc) - updated_at.astimezone(timezone.utc)
+    ).total_seconds()
     return age > timeout_seconds
 
 

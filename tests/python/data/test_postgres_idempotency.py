@@ -73,10 +73,12 @@ def test_two_postgres_workers_cannot_both_update_execution_control():
                 ),
                 return_exceptions=True,
             )
-            assert sum(
-                isinstance(value, ExecutionControlState) for value in outcomes
-            ) == 1
-            assert sum(isinstance(value, ConcurrencyConflict) for value in outcomes) == 1
+            assert (
+                sum(isinstance(value, ExecutionControlState) for value in outcomes) == 1
+            )
+            assert (
+                sum(isinstance(value, ConcurrencyConflict) for value in outcomes) == 1
+            )
             current = await first.repository.load_execution_control(scope)
             assert current is not None
             assert current.version == state.version + 1

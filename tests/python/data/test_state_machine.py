@@ -33,29 +33,39 @@ async def test_transitions_persist_audit_metadata(tmp_path):
             payload={"ticket": 42},
         )
         async with database.session_factory() as session:
-            events = list((await session.execute(
-                __import__("sqlalchemy").select(OrderTransition)
-            )).scalars())
+            events = list(
+                (
+                    await session.execute(
+                        __import__("sqlalchemy").select(OrderTransition)
+                    )
+                ).scalars()
+            )
         assert [event.to_status for event in events] == ["pending", "accepted"]
         assert events[-1].actor == "broker"
         assert events[-1].correlation_id == "corr-1"
         assert events[-1].timestamp == at
         assert events[-1].payload == {"ticket": 42}
 
-        await repository.insert_position({
-            "position_id": "position-1",
-            "symbol": "EURUSD",
-            "side": "buy",
-            "quantity": 1,
-            "average_price": 1.1,
-        })
+        await repository.insert_position(
+            {
+                "position_id": "position-1",
+                "symbol": "EURUSD",
+                "side": "buy",
+                "quantity": 1,
+                "average_price": 1.1,
+            }
+        )
         await repository.transition_position(
             "position-1", "closed", actor="broker", correlation_id="corr-2"
         )
         async with database.session_factory() as session:
-            position_events = list((await session.execute(
-                __import__("sqlalchemy").select(PositionTransition)
-            )).scalars())
+            position_events = list(
+                (
+                    await session.execute(
+                        __import__("sqlalchemy").select(PositionTransition)
+                    )
+                ).scalars()
+            )
         assert position_events[-1].to_status == "closed"
         assert position_events[-1].payload == {}
     finally:

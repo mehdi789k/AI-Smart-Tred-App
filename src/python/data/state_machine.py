@@ -10,7 +10,9 @@ ORDER_TRANSITIONS: Mapping[str | None, frozenset[str]] = {
     "pending": frozenset({"accepted", "rejected", "cancelled", "expired", "unknown"}),
     "accepted": frozenset({"partial", "filled", "cancelled", "rejected", "unknown"}),
     "partial": frozenset({"partial", "filled", "cancelled", "unknown"}),
-    "unknown": frozenset({"accepted", "partial", "filled", "rejected", "cancelled", "expired"}),
+    "unknown": frozenset(
+        {"accepted", "partial", "filled", "rejected", "cancelled", "expired"}
+    ),
     "filled": frozenset(),
     "rejected": frozenset(),
     "cancelled": frozenset(),

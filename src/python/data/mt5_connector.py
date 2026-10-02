@@ -130,7 +130,9 @@ class MT5Connector:
             initialized = bool(self.mt5.initialize(**kwargs))
         except Exception as error:
             self._connected = False
-            raise MT5LoginError(f"MetaTrader 5 initialization failed: {error}") from error
+            raise MT5LoginError(
+                f"MetaTrader 5 initialization failed: {error}"
+            ) from error
         if not initialized:
             self._connected = False
             self._last_error = self._safe_last_error()
@@ -141,7 +143,9 @@ class MT5Connector:
                 self._connected = False
                 self._last_error = self._safe_last_error()
                 self.mt5.shutdown()
-                raise MT5LoginError(f"MetaTrader 5 account validation failed: {self._last_error}")
+                raise MT5LoginError(
+                    f"MetaTrader 5 account validation failed: {self._last_error}"
+                )
             actual_login = getattr(account, "login", self.config.mt5_login)
             if actual_login != self.config.mt5_login:
                 self._connected = False
@@ -175,10 +179,17 @@ class MT5Connector:
                 return self.connect()
             except MT5Error as error:
                 last_error = error
-                logger.warning("MT5 reconnect attempt %d/%d failed: %s", attempt + 1, attempts, error)
+                logger.warning(
+                    "MT5 reconnect attempt %d/%d failed: %s",
+                    attempt + 1,
+                    attempts,
+                    error,
+                )
                 if attempt + 1 < attempts:
                     self._sleep(self.config.reconnect_backoff_seconds * (2**attempt))
-        raise MT5LoginError(f"MT5 reconnect failed after {attempts} attempts: {last_error}")
+        raise MT5LoginError(
+            f"MT5 reconnect failed after {attempts} attempts: {last_error}"
+        )
 
     def ensure_connected(self) -> None:
         """Ensure the session is connected, reconnecting when the terminal disappeared."""
@@ -249,9 +260,7 @@ class MT5Connector:
         if values is None:
             self._raise_api_error(f"copy rates for {symbol} {timeframe}")
         return [
-            _normalize_rate(
-                _record_to_dict(value), symbol, Timeframe(timeframe).value
-            )
+            _normalize_rate(_record_to_dict(value), symbol, Timeframe(timeframe).value)
             for value in values
         ]
 
@@ -286,7 +295,9 @@ class MT5Connector:
                 if values is None:
                     self._raise_api_error(f"copy rates page for {symbol} {timeframe}")
                 return [
-                    _normalize_rate(_record_to_dict(value), symbol, Timeframe(timeframe).value)
+                    _normalize_rate(
+                        _record_to_dict(value), symbol, Timeframe(timeframe).value
+                    )
                     for value in values
                 ]
             except Exception as error:
@@ -299,7 +310,9 @@ class MT5Connector:
                     self.reconnect(attempts=1)
                 except MT5Error as reconnect_error:
                     last_error = reconnect_error
-        raise MT5Error(f"MT5 paged rates failed after {attempts} attempts: {last_error}")
+        raise MT5Error(
+            f"MT5 paged rates failed after {attempts} attempts: {last_error}"
+        )
 
     def get_ticks(
         self,
@@ -385,7 +398,9 @@ class MT5Connector:
                     self.reconnect(attempts=1)
                 except MT5Error as reconnect_error:
                     last_error = reconnect_error
-        raise MT5Error(f"MT5 {operation} failed after {attempts} attempts: {last_error}")
+        raise MT5Error(
+            f"MT5 {operation} failed after {attempts} attempts: {last_error}"
+        )
 
     def iter_ticks(self, symbols: tuple[str, ...]) -> Iterator[dict[str, Any]]:
         """Yield one latest tick per symbol; callers control polling cadence."""

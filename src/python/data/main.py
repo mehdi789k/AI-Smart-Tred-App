@@ -36,24 +36,26 @@ async def run_service(
     health = CollectorHealth(
         Path(getattr(config, "health_file", "data/collector_health.json")), Lock()
     )
-    collector_lock = CollectorLock(
-        getattr(config, "lock_file", "data/collector.lock")
-    )
+    collector_lock = CollectorLock(getattr(config, "lock_file", "data/collector.lock"))
     try:
         collector_lock.acquire()
         health.update("starting")
-        await database.initialize(hypertables=config.database_url.startswith("postgresql"))
+        await database.initialize(
+            hypertables=config.database_url.startswith("postgresql")
+        )
         connector.connect()
         symbols = config.symbols or connector.visible_symbols()
         if not symbols:
             raise RuntimeError("No symbols are visible in the MT5 Market Watch")
-        logger.info("Collecting %d Market Watch symbols across %d timeframes", len(symbols), len(config.timeframes))
+        logger.info(
+            "Collecting %d Market Watch symbols across %d timeframes",
+            len(symbols),
+            len(config.timeframes),
+        )
         if load_history:
             loader = HistoricalLoader(connector, database.repository)
             await loader.load(symbols, config.timeframes, count=config.history_bars)
-        streamer = MarketDataStreamer(
-            connector, config, repository=database.repository
-        )
+        streamer = MarketDataStreamer(connector, config, repository=database.repository)
         # Keep the resolved Market Watch list for the live polling phase.
         config.symbols = tuple(symbols)
         # The polling API is intentionally synchronous because MT5 and pyzmq
@@ -91,7 +93,9 @@ async def run_stage_a(
     database = AsyncDatabase(config.database_url)
     connector = MT5Connector(config)
     try:
-        await database.initialize(hypertables=config.database_url.startswith("postgresql"))
+        await database.initialize(
+            hypertables=config.database_url.startswith("postgresql")
+        )
         connector.connect()
         loader = HistoricalLoader(connector, database.repository)
         result = await loader.load_stage_a(
@@ -100,8 +104,12 @@ async def run_stage_a(
         )
         logger.info(
             "Stage A complete: %s %s fetched=%d stored=%d duplicates=%d gaps=%d",
-            result.symbol, result.timeframe, result.fetched, result.stored,
-            result.duplicates_removed, len(result.gaps),
+            result.symbol,
+            result.timeframe,
+            result.fetched,
+            result.stored,
+            result.duplicates_removed,
+            len(result.gaps),
         )
     except Exception:
         logger.exception("Stage A XAUUSD M5 collection failed")
@@ -125,22 +133,35 @@ async def run_backfill(
     database = AsyncDatabase(config.database_url)
     connector = MT5Connector(config)
     try:
-        await database.initialize(hypertables=config.database_url.startswith("postgresql"))
+        await database.initialize(
+            hypertables=config.database_url.startswith("postgresql")
+        )
         connector.connect()
         symbols = config.symbols or connector.visible_symbols()
         loader = HistoricalLoader(connector, database.repository, batch_size=chunk_size)
         results = await loader.backfill(
-            symbols, config.timeframes, target_bars=target_bars,
-            chunk_size=chunk_size, stop_event=stop_event,
+            symbols,
+            config.timeframes,
+            target_bars=target_bars,
+            chunk_size=chunk_size,
+            stop_event=stop_event,
         )
         for result in results:
             logger.info(
                 "Backfill %s %s: pages=%d requested=%d available=%d fetched=%d "
                 "stored=%d coverage=%s..%s gaps=%d stopped=%s exhausted=%s",
-                result.symbol, result.timeframe, result.pages,
-                result.requested_bars, result.available_bars, result.fetched,
-                result.stored, result.coverage_start, result.coverage_end,
-                len(result.gaps), result.stopped, result.exhausted,
+                result.symbol,
+                result.timeframe,
+                result.pages,
+                result.requested_bars,
+                result.available_bars,
+                result.fetched,
+                result.stored,
+                result.coverage_start,
+                result.coverage_end,
+                len(result.gaps),
+                result.stopped,
+                result.exhausted,
             )
     finally:
         connector.disconnect()
@@ -155,31 +176,42 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-history", action="store_true", help="skip the initial historical backfill"
     )
     parser.add_argument(
-        "--stage-a", action="store_true",
+        "--stage-a",
+        action="store_true",
         help="load and quality-gate at least 30000 XAUUSD M5 bars, then exit",
     )
     parser.add_argument(
-        "--bars", type=int, default=30_000,
+        "--bars",
+        type=int,
+        default=30_000,
         help="Stage A bar count (minimum 30000)",
     )
     parser.add_argument(
-        "--backfill", type=int, metavar="BARS",
+        "--backfill",
+        type=int,
+        metavar="BARS",
         help="run resumable backwards paginated backfill and exit",
     )
     parser.add_argument(
-        "--chunk-size", type=int, default=1_000,
+        "--chunk-size",
+        type=int,
+        default=1_000,
         help="page size for --backfill",
     )
     parser.add_argument(
-        "--health", action="store_true",
+        "--health",
+        action="store_true",
         help="print collector health JSON and exit",
     )
     parser.add_argument(
-        "--watchdog", action="store_true",
+        "--watchdog",
+        action="store_true",
         help="check heartbeat freshness and exit non-zero when stale",
     )
     parser.add_argument(
-        "--watchdog-timeout", type=float, default=15.0,
+        "--watchdog-timeout",
+        type=float,
+        default=15.0,
         help="maximum heartbeat age in seconds for --watchdog",
     )
     return parser
@@ -192,7 +224,10 @@ def main(argv: list[str] | None = None) -> None:
     try:
         if args.health:
             config = get_settings()
-            health = CollectorHealth(Path(getattr(config, "health_file", "data/collector_health.json")), Lock())
+            health = CollectorHealth(
+                Path(getattr(config, "health_file", "data/collector_health.json")),
+                Lock(),
+            )
             payload = health.read()
             print(json.dumps(payload, ensure_ascii=False))
             if args.watchdog and (
@@ -203,7 +238,9 @@ def main(argv: list[str] | None = None) -> None:
         elif args.stage_a:
             asyncio.run(run_stage_a(count=args.bars))
         elif args.backfill is not None:
-            asyncio.run(run_backfill(target_bars=args.backfill, chunk_size=args.chunk_size))
+            asyncio.run(
+                run_backfill(target_bars=args.backfill, chunk_size=args.chunk_size)
+            )
         else:
             asyncio.run(run_service(load_history=not args.no_history))
     except KeyboardInterrupt:

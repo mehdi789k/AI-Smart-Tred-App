@@ -50,55 +50,77 @@ def test_repository_round_trips_derived_and_execution_records():
         repository = database.repository
         timestamp = datetime(2024, 1, 1, tzinfo=timezone.utc)
 
-        assert await repository.bulk_insert_indicator_calculations(
-            [
+        assert (
+            await repository.bulk_insert_indicator_calculations(
+                [
+                    {
+                        "symbol": "EURUSD",
+                        "timeframe": Timeframe.M1,
+                        "timestamp": timestamp,
+                        "indicator_name": "rsi",
+                        "category": "momentum",
+                        "value": 55,
+                        "values": {"period": 14},
+                    }
+                ]
+            )
+            == 1
+        )
+        assert (
+            await repository.bulk_insert_filter_evaluations(
+                [
+                    {
+                        "symbol": "EURUSD",
+                        "timeframe": "M1",
+                        "timestamp": timestamp,
+                        "filter_name": "trend",
+                        "category": "trend",
+                        "passed": True,
+                        "signal": "buy",
+                    }
+                ]
+            )
+            == 1
+        )
+        assert (
+            await repository.insert_order(
                 {
-                    "symbol": "EURUSD",
-                    "timeframe": Timeframe.M1,
-                    "timestamp": timestamp,
-                    "indicator_name": "rsi",
-                    "category": "momentum",
-                    "value": 55,
-                    "values": {"period": 14},
-                }
-            ]
-        ) == 1
-        assert await repository.bulk_insert_filter_evaluations(
-            [
-                {
-                    "symbol": "EURUSD",
-                    "timeframe": "M1",
-                    "timestamp": timestamp,
-                    "filter_name": "trend",
-                    "category": "trend",
-                    "passed": True,
-                    "signal": "buy",
-                }
-            ]
-        ) == 1
-        assert await repository.insert_order(
-            {
-                "order_id": "order-1",
-                "symbol": "EURUSD",
-                "side": "buy",
-                "quantity": 1,
-            }
-        ) == 1
-        assert await repository.bulk_insert_trade_executions(
-            [
-                {
-                    "execution_id": "fill-1",
                     "order_id": "order-1",
                     "symbol": "EURUSD",
-                    "timestamp": timestamp,
                     "side": "buy",
                     "quantity": 1,
-                    "price": 1.1,
                 }
-            ]
-        ) == 1
-        assert len(await repository.get_indicator_calculations("EURUSD", category="momentum")) == 1
-        assert len(await repository.get_filter_evaluations("EURUSD", category="trend")) == 1
+            )
+            == 1
+        )
+        assert (
+            await repository.bulk_insert_trade_executions(
+                [
+                    {
+                        "execution_id": "fill-1",
+                        "order_id": "order-1",
+                        "symbol": "EURUSD",
+                        "timestamp": timestamp,
+                        "side": "buy",
+                        "quantity": 1,
+                        "price": 1.1,
+                    }
+                ]
+            )
+            == 1
+        )
+        assert (
+            len(
+                await repository.get_indicator_calculations(
+                    "EURUSD", category="momentum"
+                )
+            )
+            == 1
+        )
+        assert (
+            len(await repository.get_filter_evaluations("EURUSD", category="trend"))
+            == 1
+        )
         assert len(await repository.get_orders(symbol="EURUSD")) == 1
         assert len(await repository.get_trade_executions("EURUSD")) == 1
         await database.dispose()
@@ -135,7 +157,10 @@ def test_repository_records_order_and_fill_atomically_and_idempotently():
         orders = await repository.get_orders(symbol="EURUSD")
         executions = await repository.get_trade_executions("EURUSD")
         assert len([item for item in orders if item.order_id == "order-atomic-1"]) == 1
-        assert len([item for item in executions if item.execution_id == "fill-atomic-1"]) == 1
+        assert (
+            len([item for item in executions if item.execution_id == "fill-atomic-1"])
+            == 1
+        )
         await database.dispose()
 
     asyncio.run(scenario())

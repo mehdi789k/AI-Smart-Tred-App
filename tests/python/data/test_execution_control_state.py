@@ -219,8 +219,12 @@ async def test_concurrent_execution_control_updates_have_one_winner(tmp_path):
             return_exceptions=True,
         )
 
-        assert sum(isinstance(outcome, ExecutionControlState) for outcome in outcomes) == 1
-        assert sum(isinstance(outcome, ConcurrencyConflict) for outcome in outcomes) == 1
+        assert (
+            sum(isinstance(outcome, ExecutionControlState) for outcome in outcomes) == 1
+        )
+        assert (
+            sum(isinstance(outcome, ConcurrencyConflict) for outcome in outcomes) == 1
+        )
         current = await first.repository.load_execution_control("live:XAUUSD")
         assert current is not None
         assert current.version == state.version + 1

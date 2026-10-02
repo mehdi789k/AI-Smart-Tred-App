@@ -96,14 +96,26 @@ class DataConfig:
         """Normalize and validate the runtime settings after instantiation."""
 
         self.mt5_login = None if self.mt5_login is None else int(self.mt5_login)
-        self.mt5_password = None if self.mt5_password is None else str(self.mt5_password).strip() or None
-        self.mt5_server = None if self.mt5_server is None else str(self.mt5_server).strip() or None
-        self.mt5_terminal_path = None if self.mt5_terminal_path is None else str(self.mt5_terminal_path).strip() or None
+        self.mt5_password = (
+            None
+            if self.mt5_password is None
+            else str(self.mt5_password).strip() or None
+        )
+        self.mt5_server = (
+            None if self.mt5_server is None else str(self.mt5_server).strip() or None
+        )
+        self.mt5_terminal_path = (
+            None
+            if self.mt5_terminal_path is None
+            else str(self.mt5_terminal_path).strip() or None
+        )
         self.mt5_xauusd_symbol = str(self.mt5_xauusd_symbol).strip()
         # Broker symbols can contain case-sensitive suffixes such as
         # ``XAUUSD_l``; normalize whitespace without changing the identifier.
         self.symbols = tuple(
-            str(symbol).strip() for symbol in (self.symbols or ()) if str(symbol).strip()
+            str(symbol).strip()
+            for symbol in (self.symbols or ())
+            if str(symbol).strip()
         )
         raw_timeframes = self.timeframes or tuple(Timeframe)
         normalized_timeframes: list[Timeframe] = []
@@ -114,10 +126,20 @@ class DataConfig:
                 value if isinstance(value, Timeframe) else Timeframe(str(value).upper())
             )
         self.timeframes = tuple(dict.fromkeys(normalized_timeframes))
-        self.database_url = None if self.database_url is None else str(self.database_url).strip()
-        self.zmq_endpoint = None if self.zmq_endpoint is None else str(self.zmq_endpoint).strip()
-        self.log_level = str(self.log_level).upper() if self.log_level is not None else "INFO"
-        self.log_file = None if self.log_file is None else str(self.log_file).strip() or "logs/data_collector.log"
+        self.database_url = (
+            None if self.database_url is None else str(self.database_url).strip()
+        )
+        self.zmq_endpoint = (
+            None if self.zmq_endpoint is None else str(self.zmq_endpoint).strip()
+        )
+        self.log_level = (
+            str(self.log_level).upper() if self.log_level is not None else "INFO"
+        )
+        self.log_file = (
+            None
+            if self.log_file is None
+            else str(self.log_file).strip() or "logs/data_collector.log"
+        )
         self.health_file = str(self.health_file).strip() or "data/collector_health.json"
         self.lock_file = str(self.lock_file).strip() or "data/collector.lock"
         self.validate()
@@ -142,7 +164,9 @@ class DataConfig:
             raise ValueError("MT5_XAUUSD_SYMBOL must not be empty")
         if not self.database_url:
             raise ValueError("DATABASE_URL must not be empty")
-        if not self.database_url.startswith(("postgresql://", "postgresql+", "postgres://", "sqlite://")):
+        if not self.database_url.startswith(
+            ("postgresql://", "postgresql+", "postgres://", "sqlite://")
+        ):
             raise ValueError("DATABASE_URL must use a PostgreSQL or SQLite URL")
         if self.poll_interval_seconds <= 0:
             raise ValueError("poll_interval_seconds must be positive")
@@ -154,7 +178,9 @@ class DataConfig:
             raise ValueError("history_bars must be positive")
         if self.log_level not in logging._nameToLevel:
             raise ValueError(f"Unsupported log level {self.log_level!r}")
-        if self.zmq_endpoint and not self.zmq_endpoint.startswith(("tcp://", "ipc://", "inproc://")):
+        if self.zmq_endpoint and not self.zmq_endpoint.startswith(
+            ("tcp://", "ipc://", "inproc://")
+        ):
             raise ValueError("ZMQ endpoint must use a supported transport scheme")
         return self
 
@@ -168,7 +194,9 @@ class DataConfig:
             try:
                 mt5_login = int(login_raw)
             except ValueError as error:
-                raise ValueError("MT5_LOGIN must be a positive integer account number") from error
+                raise ValueError(
+                    "MT5_LOGIN must be a positive integer account number"
+                ) from error
         else:
             mt5_login = None
         raw_timeframes = _split_csv(
@@ -187,7 +215,9 @@ class DataConfig:
             mt5_server=os.getenv("MT5_SERVER"),
             mt5_terminal_path=os.getenv("MT5_TERMINAL_PATH"),
             mt5_xauusd_symbol=os.getenv("MT5_XAUUSD_SYMBOL", "XAUUSD"),
-            symbols=_split_csv(os.getenv("DATA_SYMBOLS") or os.getenv("MT5_SYMBOLS"), cls().symbols),
+            symbols=_split_csv(
+                os.getenv("DATA_SYMBOLS") or os.getenv("MT5_SYMBOLS"), cls().symbols
+            ),
             timeframes=timeframes,
             database_url=os.getenv("DATABASE_URL", cls().database_url),
             zmq_endpoint=os.getenv("ZMQ_ENDPOINT", cls().zmq_endpoint),
@@ -197,7 +227,9 @@ class DataConfig:
             history_bars=max(1_000, int(os.getenv("MT5_HISTORY_BARS", "10000"))),
             log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
             log_file=os.getenv("LOG_FILE", "logs/data_collector.log"),
-            health_file=os.getenv("COLLECTOR_HEALTH_FILE", "data/collector_health.json"),
+            health_file=os.getenv(
+                "COLLECTOR_HEALTH_FILE", "data/collector_health.json"
+            ),
             lock_file=os.getenv("COLLECTOR_LOCK_FILE", "data/collector.lock"),
         )
         return config
