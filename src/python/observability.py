@@ -137,7 +137,9 @@ class MetricsRegistry:
         with self._lock:
             return self._key(name, labels) in self._gauges
 
-    def get_metric_value(self, name: str, *, labels: dict[str, Any] | None = None) -> float:
+    def get_metric_value(
+        self, name: str, *, labels: dict[str, Any] | None = None
+    ) -> float:
         with self._lock:
             if self._key(name, labels) in self._gauges:
                 return self._gauges[self._key(name, labels)]

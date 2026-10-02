@@ -258,7 +258,9 @@ def create_app(
                     if runtime_mt5 is None or not bool(runtime_mt5.is_connected()):
                         raise RuntimeError("MT5 is not connected for live risk setup")
                     account = runtime_mt5.get_account_summary()
-                    capital = float(account.get("equity") or account.get("balance") or 0)
+                    capital = float(
+                        account.get("equity") or account.get("balance") or 0
+                    )
                     if capital <= 0:
                         raise ValueError("MT5 account equity must be positive")
                     history = runtime_mt5.get_history(days=1)
@@ -396,7 +398,10 @@ def create_app(
             metrics.set_gauge("circuit_breaker_tripped", int(tripped))
         else:
             metrics.set_gauge("circuit_breaker_configured", 0)
-        if live_mode_enabled and dependency_status["circuit_breaker"] == "not_configured":
+        if (
+            live_mode_enabled
+            and dependency_status["circuit_breaker"] == "not_configured"
+        ):
             raise HTTPException(status_code=503, detail="circuit_breaker_unavailable")
         if live_mode_enabled and dependency_status["mt5"] == "unavailable":
             raise HTTPException(status_code=503, detail="mt5_unavailable")
