@@ -116,6 +116,24 @@ ML/backtest و EAهای MQL5 نیز در checkout حاضر هستند؛ اجرا
 
 هر فایل اندیکاتور/فیلتر معمولاً تابع `calculate_*`، تابع ذخیرهٔ JSON و `if __name__ == "__main__"` دارد. قرارداد نمونهٔ اندیکاتورها در [indicators/README.md](../indicators/README.md#L17-L24) مستند شده است.
 
+### 4.4 مشاهده‌پذیری عملیاتی چند replica
+
+مسیر موجود `/metrics` در [app.py](../src/python/api/app.py) پیش از هر scrape،
+از طریق [OperationalMetricsSampler](../src/python/api/metrics_sampler.py)،
+وضعیت کندل‌های `persisted` و شمار سفارش‌های `unknown` را با queryهای
+فقط‌خواندنی از دیتابیس می‌خواند. حد freshness فقط برای زوج‌های صریح
+`SYMBOL:TIMEFRAME` از `OBS_CANDLE_MAX_AGE_SECONDS` پذیرفته می‌شود؛ نبود تنظیم
+به‌صورت metric و alert آشکار است و JSON نامعتبر API را fail-fast می‌کند.
+
+در scale-out، هر replica روی پورت داخلی `8000` باقی می‌ماند و Prometheus از
+طریق DNS discovery همان سرویس را scrape می‌کند. Gaugeهای وضعیت مشترک در
+Prometheus با `max` تجمیع می‌شوند؛ خطای هر replica جداگانه قابل مشاهده است و
+counterهای رخداد collection با `sum`/`increase` جمع می‌شوند. پورت میزبان API
+از بازهٔ `8000-8099` تخصیص می‌یابد و باید با `docker compose ps api` کشف شود.
+Exposure و daily P&L عمداً منتشر نمی‌شوند تا منبع snapshot حساب authoritative
+و تازه تعریف شود. این scrapeها هیچ تغییری در تصمیم ریسک یا اجرای سفارش ایجاد
+نمی‌کنند.
+
 ## 5. موجودی دستورات و راستی‌آزمایی
 
 | کار | دستور تأییدشده | وضعیت |
@@ -225,7 +243,7 @@ flowchart TD
 | symbol whitelist | در دستورالعمل الزامی است، اما در `send_*_order` whitelist دیده نمی‌شود؛ فقط existence/visibility نماد بررسی می‌شود |
 | محدودیت حجم | workflow مرکزی محدودیت حجم نماد و حداکثر حجم پوزیشن را اعمال می‌کند |
 | circuit breaker سفارش | سفارش live فقط از workflow مرکزی عبور می‌کند؛ مسیرهای legacy قبل از هر ارسال fail-closed هستند |
-| observability | `print` و `mt5.last_error()`؛ metrics/tracing/structured logs وجود ندارد |
+| observability | API `/metrics` وضعیت freshness کندل persisted، منبع نمونه‌برداری و سفارش‌های unknown را منتشر می‌کند؛ Prometheus/Alertmanager قواعد چند replica و Grafana داشبورد عملیاتی دارند |
 | config | environment فقط برای مسیر ترمینال استفاده شده؛ `.env` loader یا settings مرکزی وجود ندارد |
 | transaction/database | repository SQLAlchemy با transaction صریح و کنترل durable execution |
 
