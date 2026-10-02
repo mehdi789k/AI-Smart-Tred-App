@@ -122,11 +122,21 @@ docker compose --profile training run --rm ml-training
 
 | سرویس | نشانی |
 |---|---|
-| API | `http://localhost:8000` |
-| OpenAPI | `http://localhost:8000/docs` |
+| API | `http://localhost:8000` (اگر پورت 8000 آزاد باشد) |
+| OpenAPI | `http://localhost:8000/docs` (اگر پورت 8000 آزاد باشد) |
 | Dashboard | `http://localhost:8501` |
 | Prometheus | `http://localhost:9090` |
 | Grafana | `http://localhost:3000` |
+
+Compose برای API بازهٔ پورت میزبان `8000-8099` را به پورت داخلی `8000`
+نگاشت می‌کند. پس از scale کردن replicaها یا اشغال بودن پورت 8000، پورت واقعی
+هر replica را با `docker compose ps api` پیدا کنید و همان را در URLهای API
+استفاده کنید:
+
+```powershell
+docker compose up -d --scale api=2 api
+docker compose ps api
+```
 
 برای توقف سرویس‌ها:
 

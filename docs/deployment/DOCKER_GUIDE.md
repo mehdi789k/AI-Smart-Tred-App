@@ -158,8 +158,34 @@ docker compose logs -f api
 ```
 
 API health is available at <http://localhost:8000/health>. The Compose API
-healthcheck validates this endpoint, while the database healthcheck uses
-`pg_isready`.
+healthcheck validates the container endpoint, while the database healthcheck
+uses `pg_isready`. Host port `8000` is the default only when it is available;
+Compose can select another host port from `8000-8099`.
+
+For multiple API replicas, each container continues to listen on port `8000`
+inside the Compose network. Prometheus and other services should use
+`http://api:8000`; host clients must discover the published port for each
+replica:
+
+```powershell
+docker compose up -d --scale api=2 api
+docker compose ps api
+```
+
+Use the host port shown in the `PORTS` column for local API URLs instead of
+assuming `localhost:8000`.
+
+Configure optional candle freshness monitoring in `.env` with explicit
+symbol/timeframe pairs and positive limits in seconds, for example:
+
+```text
+OBS_CANDLE_MAX_AGE_SECONDS={"XAUUSD:M5":600}
+```
+
+An empty value leaves candle freshness unconfigured and triggers a monitoring
+alert. Invalid mappings prevent the API from starting. Exposure and daily P&L
+are intentionally not published until an authoritative, fresh account
+snapshot source is available.
 
 ## Train a model
 

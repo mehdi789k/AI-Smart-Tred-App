@@ -153,8 +153,7 @@ def test_filter_tests_use_canonical_package_imports() -> None:
         content = path.read_text(encoding="utf-8")
         assert "sys.path.insert" not in content
         assert all(
-            f"from {module} import" not in content
-            and f"import {module}" not in content
+            f"from {module} import" not in content and f"import {module}" not in content
             for module in legacy_modules
         )
         assert "from src.python.filters." in content
@@ -207,3 +206,75 @@ def test_workflow_without_demo_config_uses_configured_audit_path(
     workflow._audit_logger.write("test_event")
 
     assert audit_path.exists()
+
+
+def test_candle_validator_module_exists() -> None:
+    """Ensure the candle contract validator is part of the project."""
+    indicators_dir = PROJECT_ROOT / "src/python/indicators"
+    candle_validator_path = indicators_dir / "candle_validator.py"
+
+    assert candle_validator_path.exists(), (
+        "candle_validator.py must exist to enforce versioning and provenance"
+    )
+
+
+def test_indicator_entry_points_use_versioned_candle_validator() -> None:
+    """Ensure candle-based indicator modules invoke the versioned validator."""
+    import ast
+
+    indicators_dir = PROJECT_ROOT / "src/python/indicators"
+
+    # All indicator modules that have save_*() functions
+    indicator_modules = [
+        "rsi.py",
+        "macd.py",
+        "atr.py",
+        "adx.py",
+        "bollinger_bands.py",
+        "ichimoku.py",
+        "moving_average.py",
+        "stochastic.py",
+        "volume.py",
+        "market_regime.py",
+    ]
+
+    for module_name in indicator_modules:
+        module_path = indicators_dir / module_name
+        assert module_path.exists(), f"{module_name} should exist"
+
+        content = module_path.read_text(encoding="utf-8")
+
+        # Parse the module to check for imports and function calls
+        tree = ast.parse(content)
+
+        # Check that the module imports the validator.
+        has_validator_import = any(
+            (
+                isinstance(node, ast.ImportFrom)
+                and node.module == "candle_validator"
+                and any(
+                    alias.name == "validate_candle_batch_versioned"
+                    for alias in node.names
+                )
+            )
+            or (
+                isinstance(node, ast.ImportFrom)
+                and node.module == ".candle_validator"
+                and any(
+                    alias.name == "validate_candle_batch_versioned"
+                    for alias in node.names
+                )
+            )
+            for node in ast.walk(tree)
+        )
+
+        has_validator_call = any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "validate_candle_batch_versioned"
+            for node in ast.walk(tree)
+        )
+
+        assert has_validator_import and has_validator_call, (
+            f"{module_name} must import and call validate_candle_batch_versioned"
+        )

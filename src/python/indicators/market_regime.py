@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .candle_validator import validate_candle_batch_versioned
 from .common import closes, load_candles, rolling_mean, true_ranges
 
 TREND_PERIOD = 50
@@ -26,6 +27,7 @@ def calculate_market_regime(
     atr_period: int = ATR_PERIOD,
     volatility_lookback: int = VOLATILITY_LOOKBACK,
 ) -> list[dict[str, Any]]:
+    candles = validate_candle_batch_versioned(candles)
     prices = closes(candles)
     trend = rolling_mean(prices, trend_period)
     atr = rolling_mean(true_ranges(candles), atr_period)

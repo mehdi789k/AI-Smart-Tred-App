@@ -8,27 +8,38 @@ from src.python.filters.structure_mtf_filters import (
     latest_input_file,
     load_zones,
 )
+from tests.python.indicators.candle_fixtures import versioned_candles
 
 
 def htf_candles() -> list[dict[str, float]]:
-    return [
-        {
-            "time": float(index * 3600),
-            "open": 100 + index,
-            "high": 102 + index,
-            "low": 99 + index,
-            "close": 101 + index,
-        }
-        for index in range(8)
-    ]
+    return versioned_candles(
+        [
+            {
+                "time": float(index * 3600),
+                "open": 100 + index,
+                "high": 102 + index,
+                "low": 99 + index,
+                "close": 101 + index,
+            }
+            for index in range(8)
+        ]
+    )
 
 
 class StructureMtfFilterTests(unittest.TestCase):
     def test_bullish_pattern_in_demand_zone_is_allowed(self) -> None:
-        ltf = [
-            {"time": 18000.0, "open": 106, "high": 107, "low": 105, "close": 106},
-            {"time": 18300.0, "open": 106.5, "high": 108, "low": 103, "close": 107.5},
-        ]
+        ltf = versioned_candles(
+            [
+                {"time": 18000.0, "open": 106, "high": 107, "low": 105, "close": 106},
+                {
+                    "time": 18300.0,
+                    "open": 106.5,
+                    "high": 108,
+                    "low": 103,
+                    "close": 107.5,
+                },
+            ]
+        )
         result = calculate_structure_mtf_filter(
             ltf,
             htf_candles(),
@@ -39,7 +50,9 @@ class StructureMtfFilterTests(unittest.TestCase):
         self.assertEqual(result[-1]["htf_trend"], "bullish")
 
     def test_opposite_pattern_and_no_mans_land_are_blocked(self) -> None:
-        ltf = [{"time": 18000.0, "open": 108, "high": 109, "low": 103, "close": 104}]
+        ltf = versioned_candles(
+            [{"time": 18000.0, "open": 108, "high": 109, "low": 103, "close": 104}]
+        )
         result = calculate_structure_mtf_filter(
             ltf,
             htf_candles(),

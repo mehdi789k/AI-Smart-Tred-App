@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
 from src.python.indicators.common import closes, load_candles
 
 EMA_PERIOD = 20
@@ -60,6 +61,7 @@ def dxy_filter(
     slope_threshold: float = DXY_SLOPE_THRESHOLD,
 ) -> dict[str, Any]:
     """Return whether a target USD pair direction agrees with the DXY trend."""
+    dxy_candles = validate_candle_batch_versioned(dxy_candles)
     if target_direction not in {"buy", "sell"}:
         raise ValueError("target_direction must be 'buy' or 'sell'")
     if slope_lookback < 1:
@@ -109,6 +111,10 @@ def filter_correlated_positions(
     max_correlated_positions: int = MAX_CORRELATED_POSITIONS,
 ) -> list[dict[str, Any]]:
     """Reject later same-direction signals whose absolute return correlation is excessive."""
+    candles_by_symbol = {
+        symbol: validate_candle_batch_versioned(candles)
+        for symbol, candles in candles_by_symbol.items()
+    }
     if correlation_window < 2 or not 0 <= correlation_threshold <= 1:
         raise ValueError(
             "correlation_window must be at least 2 and threshold must be 0..1"
@@ -169,7 +175,7 @@ def save_correlated_positions(path: Path, output_path: Path, **settings: Any) ->
     payload = json.loads(path.read_text(encoding="utf-8"))
     signals = payload["signals"] if isinstance(payload, dict) else payload
     candles_by_symbol = {
-        symbol: load_candles(Path(file_path))
+        symbol: validate_candle_batch_versioned(load_candles(Path(file_path)))
         for symbol, file_path in settings.pop("market_data").items()
     }
     result = filter_correlated_positions(signals, candles_by_symbol, **settings)

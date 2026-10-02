@@ -81,3 +81,69 @@ groups:
         annotations:
           summary: Market data gaps detected
           description: Missing nominal OHLCV periods were detected.
+
+      - alert: SmartTraderUnknownOrders
+        expr: |
+          (max(unknown_orders_count) > 0)
+          and on () (max(observability_source_available{source="order_state"}) == 1)
+        labels:
+          severity: critical
+        annotations:
+          summary: Unresolved order outcomes detected
+          description: One or more orders have an unknown broker outcome and require reconciliation.
+
+      - alert: SmartTraderCandleMissing
+        expr: |
+          (max by (symbol, timeframe) (candle_data_available) == 0)
+          and on () (max(observability_source_available{source="market_data"}) == 1)
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Configured candle data is missing
+          description: No persisted candle is available for {{ $labels.symbol }} {{ $labels.timeframe }}.
+
+      - alert: SmartTraderCandleStale
+        expr: |
+          (
+            max by (symbol, timeframe) (candle_data_age_seconds)
+            > on (symbol, timeframe)
+            max by (symbol, timeframe) (candle_stale_after_seconds)
+          )
+          and on (symbol, timeframe)
+            (max by (symbol, timeframe) (candle_data_available) == 1)
+          and on ()
+            (max(observability_source_available{source="market_data"}) == 1)
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Configured candle data is stale
+          description: Candle data for {{ $labels.symbol }} {{ $labels.timeframe }} exceeded its configured age limit.
+
+      - alert: SmartTraderCandleFreshnessUnconfigured
+        expr: max(candle_freshness_configured) == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Candle freshness monitoring is not configured
+          description: Set OBS_CANDLE_MAX_AGE_SECONDS to monitor explicit symbol and timeframe pairs.
+
+      - alert: SmartTraderObservabilitySourceUnavailable
+        expr: observability_source_available{source=~"market_data|order_state"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: An API replica cannot sample an operational data source
+          description: The {{ $labels.source }} source is unavailable on API replica {{ $labels.instance }}.
+
+      - alert: SmartTraderObservabilityCollectionErrors
+        expr: sum(increase(observability_collection_errors_total[5m])) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: Operational metric collection failed
+          description: A database-backed operational metric collection failed in the last five minutes.

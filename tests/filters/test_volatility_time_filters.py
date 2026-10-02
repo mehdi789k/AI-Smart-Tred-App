@@ -9,18 +9,21 @@ from src.python.filters.volatility_time_filters import (
     calculate_volatility_time_filter,
     save_volatility_time_filter,
 )
+from tests.python.indicators.candle_fixtures import versioned_candles
 
 
 def candles() -> list[dict[str, float | str]]:
-    return [
-        {
-            "time_iso": f"2026-09-04T{15 + index // 12:02d}:{(index % 12) * 5:02d}:00",
-            "high": index + 2.0,
-            "low": index - 1.0,
-            "close": index + 1.0,
-        }
-        for index in range(60)
-    ]
+    return versioned_candles(
+        [
+            {
+                "time_iso": f"2026-09-04T{15 + index // 12:02d}:{(index % 12) * 5:02d}:00",
+                "high": index + 2.0,
+                "low": index - 1.0,
+                "close": index + 1.0,
+            }
+            for index in range(60)
+        ]
+    )
 
 
 class VolatilityTimeFilterTests(unittest.TestCase):

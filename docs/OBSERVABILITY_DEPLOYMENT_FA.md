@@ -21,6 +21,27 @@ Prometheus با DNS service discovery سرویس `api` را scrape می‌کند
 replica label `instance` جداگانه نگه می‌دارد. Queryهای dashboard با `sum`,
 `min` و `max` بین replicaها aggregate می‌شوند.
 
+هر replica در شبکهٔ Docker روی پورت `8000` می‌ماند؛ پورت میزبان از بازهٔ
+`8000-8099` انتخاب می‌شود. پورت هر replica را پس از اجرا با دستور زیر پیدا کنید
+و برای دسترسی از میزبان، به‌جای فرض `localhost:8000` از همان پورت استفاده کنید:
+
+```powershell
+docker compose ps api
+```
+
+برای فعال‌کردن freshness فقط زوج‌های صریح نماد/تایم‌فریم را با حد مثبت برحسب
+ثانیه در `.env` ثبت کنید:
+
+```env
+OBS_CANDLE_MAX_AGE_SECONDS={"XAUUSD:M5":600}
+```
+
+مقدار خالی مجاز است اما هشدار می‌دهد که پایش freshness تنظیم نشده؛ JSON یا حد
+نامعتبر باعث رد شدن تنظیمات هنگام ساخت API می‌شود. شاخص‌ها فقط کندل‌های
+`persisted` را می‌خوانند. هشدارها شامل کندل غایب/کهنه، سفارش با نتیجهٔ
+نامشخص، خطای جمع‌آوری و دسترس‌ناپذیری هر replica هستند. Exposure و daily P&L
+تا زمان تعریف منبع snapshot حساب معتبر و تازه عمداً منتشر نمی‌شوند.
+
 در حالت Compose، محدودسازی اصلی `/metrics` با bind شدن Prometheus و Grafana به
 `127.0.0.1` و استفاده از شبکه داخلی Docker انجام می‌شود. اگر
 `OBS_METRICS_TOKEN` را فعال کنید، باید header احراز هویت Prometheus را نیز در
@@ -31,11 +52,15 @@ replica label `instance` جداگانه نگه می‌دارد. Queryهای dash
 
 | سرویس | آدرس |
 |---|---|
-| API liveness | `http://127.0.0.1:8000/health` |
-| API readiness | `http://127.0.0.1:8000/ready` |
+| API liveness (پورت پیش‌فرض در صورت آزاد بودن) | `http://127.0.0.1:8000/health` |
+| API readiness (پورت پیش‌فرض در صورت آزاد بودن) | `http://127.0.0.1:8000/ready` |
 | Prometheus | `http://127.0.0.1:9090` |
 | Alertmanager | `http://127.0.0.1:9093` |
 | Grafana | `http://127.0.0.1:3000` |
+
+در حالت scale-out یا اشغال بودن پورت، با `docker compose ps api` پورت میزبان را
+پیدا و در نشانی‌های API جایگزین کنید. دسترسی داخلی Prometheus همچنان از
+`http://api:8000` انجام می‌شود.
 
 ## اجرای دائمی Collector در Windows
 
@@ -154,7 +179,8 @@ MT5_LEGACY_ORDER_PATH_ENABLED=false
 برای بررسی خودکار gateهای بدون معامله:
 
 ```powershell
-py -3.12 scripts/verify_demo_readiness.py --base-url http://127.0.0.1:8000
+docker compose ps api
+py -3.12 scripts/verify_demo_readiness.py --base-url http://127.0.0.1:<HOST_PORT>
 ```
 
 این اسکریپت فقط `/health` و `/ready` را می‌خواند و به endpoint سفارش دسترسی

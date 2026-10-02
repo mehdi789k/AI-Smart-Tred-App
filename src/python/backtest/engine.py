@@ -744,12 +744,18 @@ class BacktestEngine:
         # If both levels are touched in one OHLC bar, stop wins conservatively.
         if position.direction == "BUY":
             if position.stop_loss is not None and bar.low <= position.stop_loss:
-                return position.stop_loss, "SL"
+                stop_fill = (
+                    bar.open if bar.open < position.stop_loss else position.stop_loss
+                )
+                return stop_fill, "SL"
             if position.take_profit is not None and bar.high >= position.take_profit:
                 return position.take_profit, "TP"
         else:
             if position.stop_loss is not None and bar.high >= position.stop_loss:
-                return position.stop_loss, "SL"
+                stop_fill = (
+                    bar.open if bar.open > position.stop_loss else position.stop_loss
+                )
+                return stop_fill, "SL"
             if position.take_profit is not None and bar.low <= position.take_profit:
                 return position.take_profit, "TP"
         return None, ""

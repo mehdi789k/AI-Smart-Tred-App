@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from .candle_validator import validate_candle_batch_versioned
 from .common import closes, load_candles
 from .moving_average import calculate_ema
 
@@ -87,7 +88,7 @@ def save_macd(
     slow_period: int = SLOW_PERIOD,
     signal_period: int = SIGNAL_PERIOD,
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     indicators = calculate_macd(
         closes(candles), fast_period, slow_period, signal_period
     )

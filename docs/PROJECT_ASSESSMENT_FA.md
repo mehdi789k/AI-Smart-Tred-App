@@ -76,10 +76,10 @@ incident به‌صورت کیفی محاسبه شده است. هر مورد تا
 | 4 | P0.4 | بحرانی | نیمه‌کامل؛ credential ناقص اکنون fail-closed است، اما rotation/scan/staging اثبات‌نشده | مالک platform/security | قبل از P0.1 |
 | 5 | P1.5 | بالا | نیمه‌کامل؛ local staging backup/restore و RTO proxy سبز، managed RPO و rollback باز | مالک platform/DBA | P0ها و backup policy |
 | 6 | P1.1 | بالا | تکمیل‌شده در checkout فعلی؛ `ruff check` و `ruff format --check` سبز | مالک Python | پیش‌نیاز P1.2 |
-| 7 | P1.2 | بالا | تکمیل‌شده در checkout فعلی؛ Mypy سبز | مالک Python | پیش‌نیاز P1.3 |
+| 7 | P1.2 | بالا | تکمیل‌شده در checkout فعلی؛ اجرای جاری Mypy روی 86 فایل بدون خطا | مالک Python | پیش‌نیاز P1.3 |
 | 8 | P1.3 | بالا | تکمیل‌شده محلی؛ Python 3.12 و lock کامل در clean validation سبز | مالک release engineering | P1.1/P1.2 |
 | 9 | P1.4 | بالا | تأییدناپذیر محلی؛ Git metadata موجود نیست | repository owner | P1.1 تا P1.3 |
-| 10 | P2.1–P2.5 | متوسط | باز؛ پس از عبور از safety gate | مالک domain مربوط | همهٔ P0 و P1 |
+| 10 | P2.1–P2.5 | متوسط | P2.1 باز؛ P2.2–P2.4 در checkout تکمیل‌شده؛ P2.5 با suite و قواعد مانیتورینگ محلی تأیید شد؛ گیت‌های P0/P1 عملیاتی همچنان مستقل‌اند | مالک domain مربوط | همهٔ P0 و P1 برای استفادهٔ عملیاتی |
 
 #### معیار توقف و ترتیب تصمیم
 
@@ -121,7 +121,7 @@ incident به‌صورت کیفی محاسبه شده است. هر مورد تا
 | P2.2 | data contract اندیکاتور/filter کامل enforce نمی‌شود | schema version، provenance و رد دادهٔ ناقص پیش از محاسبه |
 | P2.3 | assumptions بک‌تست کامل قابل ممیزی نیست | golden test برای spread، slippage، commission، partial fill، gap و leakage |
 | P2.4 | registry فایل‌محور برای چند process محدود است | lock، checksum هنگام load، promotion و rollback مدل |
-| P2.5 | observability چندپردازه‌ای و alert unknown ناکافی است | metrics/alert برای freshness، exposure، daily P&L و order state |
+| P2.5 | observability چندپردازه‌ای و alert unknown ناکافی بود | **تکمیل‌شدهٔ محلی:** freshness کندل‌های persisted، وضعیت/خطای منبع برای هر replica، سفارش unknown، قواعد Prometheus و پنل‌های Grafana؛ exposure و daily P&L تا وجود منبع snapshot معتبر و تازه عمداً منتشر نمی‌شوند |
 
 ## ترتیب اجرای به‌روزشده
 
@@ -146,7 +146,7 @@ production نیست.
 
 جزئیات commandها و محدودیت‌های محیط در
 [گزارش validation ایمنی اجرا](../reports/security/execution-safety-auth-validation.md)
-ثبت شده است. اجرای تازهٔ `py -3 -m pytest -q --import-mode=importlib`
+ثبت شده است. شواهد قبلی شامل اجرای `py -3 -m pytest -q --import-mode=importlib`
 برابر **419 passed, 2 skipped** و `compileall` موفق بود. علاوه بر آن، اجرای
 `py -3 -m ruff check src tests` و
 `py -3 -m ruff format --check src tests` سبز شد و اجرای
@@ -158,3 +158,12 @@ PostgreSQL برابر **2 passed** شد. همچنین اجرای
 Migration Alembic، lifecycle hypertable و syntax Compose توسعه‌ای جایگزین
 gateهای MT5/EA، Demo E2E و deployment مستقل production نیستند. artifactهای
 Strategy Tester فقط baseline fail-closed بدون معامله هستند.
+
+اعتبارسنجی P2.5 در checkout فعلی (2026-10-02): اجرای
+`py -3.12 -m pytest -q --import-mode=importlib` برابر **666 passed, 4 skipped**؛
+`py -3.12 -m ruff check src tests` سبز؛ `docker compose config --quiet` با
+مقادیر صرفاً آزمایشی سبز و host range برابر `8000-8099`؛
+`promtool check rules ops/prometheus/alerts.yml` برابر **15 rules found**.
+هیچ سرویس Compose یا مسیر سفارش Demo/Live برای این validation اجرا نشد.
+اجرای `py -3.12 -m mypy --follow-imports=skip src/python` پس از اصلاح type
+metadata و دسترسی type-safe به قفل سیستم‌عامل، روی **86 فایل بدون خطا** سبز شد.

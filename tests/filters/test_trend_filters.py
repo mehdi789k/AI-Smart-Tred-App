@@ -9,18 +9,21 @@ from src.python.filters.trend_filters import (
     calculate_trend_filter,
     save_trend_filter,
 )
+from tests.python.indicators.candle_fixtures import versioned_candles
 
 
 def candles(count: int = 80) -> list[dict[str, float]]:
-    return [
-        {
-            "open": float(index),
-            "high": float(index + 2),
-            "low": float(index - 1),
-            "close": float(index + 1),
-        }
-        for index in range(count)
-    ]
+    return versioned_candles(
+        [
+            {
+                "open": float(index),
+                "high": float(index + 2),
+                "low": float(index - 1),
+                "close": float(index + 1),
+            }
+            for index in range(count)
+        ]
+    )
 
 
 class TrendFilterTests(unittest.TestCase):

@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
 from src.python.indicators.common import load_candles
 
 MA_PERIOD = 50
@@ -100,6 +101,8 @@ def calculate_structure_mtf_filter(
     zone_tolerance: float = ZONE_TOLERANCE,
 ) -> list[dict[str, Any]]:
     """Allow only LTF bullish/bearish patterns aligned with HTF trend and zones."""
+    ltf_candles = validate_candle_batch_versioned(ltf_candles)
+    htf_candles = validate_candle_batch_versioned(htf_candles)
     if ma_period < 1 or zone_tolerance < 0:
         raise ValueError("ma_period must be at least 1 and zone_tolerance non-negative")
     if not htf_candles:
@@ -185,9 +188,10 @@ def _output_path(input_path: Path) -> Path:
 def save_structure_mtf_filter(
     input_path: Path, htf_input: Path, zones_path: Path | None = None, **settings: Any
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
+    htf_candles = validate_candle_batch_versioned(load_candles(htf_input))
     values = calculate_structure_mtf_filter(
-        candles, load_candles(htf_input), load_zones(zones_path), **settings
+        candles, htf_candles, load_zones(zones_path), **settings
     )
     output_path = _output_path(input_path)
     parts = input_path.stem.split("_")

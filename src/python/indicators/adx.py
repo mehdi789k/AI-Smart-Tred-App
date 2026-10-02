@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from .candle_validator import validate_candle_batch_versioned
 from .common import highs, load_candles, lows, rolling_mean, true_ranges
 
 # Customize these values for the desired trading strategy.
@@ -28,6 +29,7 @@ def calculate_adx(
     weak_threshold: float = ADX_WEAK_THRESHOLD,
 ) -> list[dict[str, float | str | None]]:
     """Calculate +DI, -DI, ADX, and a configurable trend-strength label."""
+    candles = validate_candle_batch_versioned(candles)
     if period < 1:
         raise ValueError("period must be at least 1")
     if weak_threshold > strong_threshold:
@@ -103,7 +105,7 @@ def _output_path(input_path: Path) -> Path:
 
 
 def save_adx(input_path: Path) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     indicators = calculate_adx(candles)
     output_path = _output_path(input_path)
     old_outputs = list(

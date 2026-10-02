@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from src.python.indicators.candle_validator import validate_candle_batch_versioned
 from src.python.indicators.common import closes, load_candles, rolling_mean
 from src.python.indicators.macd import calculate_macd
 from src.python.indicators.rsi import calculate_rsi
@@ -45,6 +46,7 @@ def calculate_divergence(
     pivot_right: int = PIVOT_RIGHT,
 ) -> list[dict[str, Any]]:
     """Detect confirmed bullish/bearish RSI or MACD divergence at pivot points."""
+    candles = validate_candle_batch_versioned(candles)
     if pivot_left < 1 or pivot_right < 1:
         raise ValueError("pivot_left and pivot_right must be at least 1")
     prices = closes(candles)
@@ -127,6 +129,7 @@ def calculate_volume_confirmation(
     level_tolerance: float = LEVEL_TOLERANCE,
 ) -> list[dict[str, Any]]:
     """Detect weakening bullish tick volume near a configured resistance level."""
+    candles = validate_candle_batch_versioned(candles)
     if volume_period < 1 or not 0 < volume_decline_ratio <= 1 or level_tolerance < 0:
         raise ValueError("invalid volume or level settings")
     levels = [float(level) for level in (resistance_levels or [])]
@@ -232,7 +235,7 @@ def _output_path(input_path: Path) -> Path:
 def save_confirmation_filter(
     input_path: Path, levels_path: Path | None = None, **settings: Any
 ) -> Path:
-    candles = load_candles(input_path)
+    candles = validate_candle_batch_versioned(load_candles(input_path))
     levels = []
     if levels_path is not None:
         payload = json.loads(levels_path.read_text(encoding="utf-8"))

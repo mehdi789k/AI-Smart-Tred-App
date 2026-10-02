@@ -115,6 +115,38 @@ class MetricsRegistry:
         with self._lock:
             return self._counters.get(self._key(name, labels), 0.0)
 
+    def get_counter_total(self, name: str) -> float:
+        """Return the sum of all counter series for one metric name."""
+        metric_name, _ = self._key(name, None)
+        with self._lock:
+            return sum(
+                value
+                for (series_name, _labels), value in self._counters.items()
+                if series_name == metric_name
+            )
+
+    def get_gauge(self, name: str, *, labels: dict[str, Any] | None = None) -> float:
+        with self._lock:
+            return self._gauges.get(self._key(name, labels), 0.0)
+
+    def has_counter(self, name: str, *, labels: dict[str, Any] | None = None) -> bool:
+        with self._lock:
+            return self._key(name, labels) in self._counters
+
+    def has_gauge(self, name: str, *, labels: dict[str, Any] | None = None) -> bool:
+        with self._lock:
+            return self._key(name, labels) in self._gauges
+
+    def get_metric_value(
+        self, name: str, *, labels: dict[str, Any] | None = None
+    ) -> float:
+        with self._lock:
+            if self._key(name, labels) in self._gauges:
+                return self._gauges[self._key(name, labels)]
+            if self._key(name, labels) in self._counters:
+                return self._counters[self._key(name, labels)]
+            return 0.0
+
     def snapshot(self) -> dict[str, dict[str, float]]:
         """Return a stable copy for diagnostics and tests."""
         with self._lock:
@@ -183,10 +215,17 @@ class AlertManager:
         self._lock = Lock()
         self.logger = get_logger("alerts")
 
+    def _current_value(self, metric: str) -> float:
+        if self.metrics.has_gauge(metric):
+            return self.metrics.get_gauge(metric)
+        if self.metrics.has_counter(metric):
+            return self.metrics.get_counter(metric)
+        return self.metrics.get_counter_total(metric)
+
     def evaluate(self) -> list[str]:
         triggered: list[str] = []
         for metric, threshold in self.thresholds.items():
-            value = self.metrics.get_counter(metric)
+            value = self._current_value(metric)
             with self._lock:
                 if value < threshold or metric in self._triggered:
                     continue
