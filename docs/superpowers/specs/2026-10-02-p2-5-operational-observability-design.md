@@ -91,7 +91,10 @@ keyed by `SYMBOL:TIMEFRAME`, for example
 `{"XAUUSD:M5":600}`. Every configured value must be finite and strictly
 positive. An invalid mapping fails explicitly at startup. An empty mapping is
 allowed but sets `candle_freshness_configured` to `0` and is surfaced by a
-configuration alert rather than silently appearing healthy.
+configuration alert rather than silently appearing healthy. Docker Compose
+must explicitly pass this variable through to the API container; putting it in
+the operator's `.env` file alone does not make it available inside the
+container.
 
 ### Failure handling
 
@@ -138,6 +141,8 @@ the cross-replica alerting authority; Prometheus and Alertmanager remain so.
 - `src/python/observability.py` for correct local aggregation over labeled
   metric series.
 - `.env.example` for the freshness-map setting and its explanation.
+- `docker-compose.yml` to pass the freshness-map setting into the API
+  container.
 - `ops/prometheus/alerts.yml` and the existing Grafana dashboard.
 - `docs/OBSERVABILITY_DEPLOYMENT_FA.md` and `docs/PROJECT_ASSESSMENT_FA.md`.
 - Focused Python tests for the sampler, metrics, alert rules/configuration, and
