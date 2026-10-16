@@ -22,9 +22,12 @@ import sys
 import backtrader as bt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(HERE)
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+PROJECT_ROOT = os.path.dirname(HERE)          # src/python/dashboard
+REPO_ROOT = os.path.dirname(                   # ریشه مخزن (برای import src.python.*)
+    os.path.dirname(os.path.dirname(PROJECT_ROOT)))
+for _p in (PROJECT_ROOT, REPO_ROOT):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 # رجیستری ماژول‌های پلاگین: نام‌ماژول → مسیر فایل. با این کار بارگذاری مجدد
 # (مثلاً بعد از ویرایش کاربر) همان مسیر تازه را استفاده می‌کند و خطای
@@ -216,7 +219,7 @@ _FORBIDDEN_CALLS = {
 }
 _ALLOWED_IMPORT_ROOTS = {
     "backtrader", "pandas", "numpy", "math", "statistics", "datetime",
-    "dataclasses", "typing", "itertools", "functools", "collections",
+    "dataclasses", "typing", "itertools", "functools", "collections", "src",
     "trend_sniper", "strategies", "os.path",
 }
 
