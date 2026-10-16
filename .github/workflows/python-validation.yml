@@ -17,7 +17,7 @@ jobs:
       API_AUTH_TOKEN: ci-validation-placeholder
       GRAFANA_ADMIN_PASSWORD: ci-validation-placeholder
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v5
@@ -82,7 +82,7 @@ jobs:
       API_AUTH_TOKEN: ci-validation-placeholder
       GRAFANA_ADMIN_PASSWORD: ci-validation-placeholder
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate all Compose profiles
         run: docker compose --profile dashboard --profile training config --quiet
       - name: Build application images
@@ -97,7 +97,7 @@ jobs:
       API_AUTH_TOKEN: ci-validation-placeholder
       GRAFANA_ADMIN_PASSWORD: ci-validation-placeholder
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Validate Python 3.12 runtime and lock alignment
