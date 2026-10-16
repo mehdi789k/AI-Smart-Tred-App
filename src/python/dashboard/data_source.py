@@ -39,14 +39,28 @@ def list_mt5_exports(symbol=None, timeframe=None):
     """فهرست فایل‌های CSV تولیدشده توسط استخراج MT5 در market_data/historical."""
     if not os.path.isdir(MT5_EXPORT_DIR):
         return []
-    pattern = "*.csv"
+    # نام فایل‌ها حساس به بزرگی/کوچکی حرف است (مثلاً XAUUSD_l)؛ پس الگو را
+    # بدون upper() می‌سازیم و در نهایت case-insensitive تطبیق می‌دهیم.
+    patterns = ["*.csv"]
     if symbol:
-        pattern = f"*{symbol.upper()}*_{(timeframe or '*')}*.csv" if timeframe else f"*{symbol.upper()}*.csv"
+        tf_part = f"_{(timeframe or '*')}_" if timeframe else "_"
+        patterns = [f"*{symbol}{tf_part}*.csv", f"*{symbol.upper()}{tf_part}*.csv"]
     found = []
     for sym_dir in sorted(os.listdir(MT5_EXPORT_DIR)):
         d = os.path.join(MT5_EXPORT_DIR, sym_dir)
         if os.path.isdir(d) and sym_dir != "runs":
-            found.extend(sorted(glob.glob(os.path.join(d, pattern))))
+            matched = set()
+            for pattern in patterns:
+                matched.update(glob.glob(os.path.join(d, pattern)))
+            # تطبیق حساس به بزرگی/کوچکی برای الگوی upper شده
+            if symbol:
+                lowered = symbol.lower()
+                matched = {
+                    p
+                    for p in matched
+                    if os.path.basename(p).lower().startswith(lowered + "_")
+                }
+            found.extend(sorted(matched))
     return found
 
 

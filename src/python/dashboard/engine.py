@@ -59,6 +59,9 @@ def run_backtest(df, spec_key, strategy_params, initial_cash=100_000,
     if strat.bar_times and strat.equity_curve:
         equity = pd.Series(strat.equity_curve,
                            index=pd.DatetimeIndex(strat.bar_times))
+        # بارهای گرم‌اپ استراتژی (قبل از اولین next) در منحنی ثبت نمی‌شوند؛
+        # برای هم‌طول بودن با داده ورودی، آن‌ها را با سرمایه اولیه پر می‌کنیم.
+        equity = equity.reindex(pd.DatetimeIndex(df.index)).fillna(initial_cash)
     else:
         equity = pd.Series([initial_cash], index=[df.index[0]])
     returns = equity.pct_change().fillna(0.0)

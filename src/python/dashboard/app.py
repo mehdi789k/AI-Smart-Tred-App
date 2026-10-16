@@ -32,6 +32,40 @@ from data_source import (fetch_history, load_csv, LiveFeed,
 from engine import run_backtest, optimize_strategy
 import strategies.base as sb
 
+# ======================================================================
+# چرخه خودکار: بالا آوردن متاتریدر ۵ + استخراج داده هنگام استارت داشبورد
+# ======================================================================
+_PROJECT_ROOT = os.path.normpath(os.path.join(_DASH_ROOT, "..", "..", ".."))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
+
+@st.cache_resource(show_spinner="🔌 اتصال خودکار به MetaTrader 5 و همگام‌سازی داده…")
+def bootstrap_mt5():
+    """تلاش برای راه‌اندازی MT5 و استخراج افزایشی داده. فقط یک بار در هر سشن سرور.
+
+    با متغیر محیطی MT5_AUTO_BOOTSTRAP=0 غیرفعال می‌شود. در محیط‌های بدون
+    ویندوز/MT5 خطا نمی‌دهد و فقط وضعیت را گزارش می‌کند.
+    """
+    if os.environ.get("MT5_AUTO_BOOTSTRAP", "1").strip().lower() in {"0", "false", "no", "off"}:
+        return None
+    try:
+        from scripts.mt5_bootstrap import ensure_mt5_pipeline
+
+        return ensure_mt5_pipeline()
+    except Exception as exc:  # هر خرابی نباید جلوی بالا آمدن داشبورد را بگیرد
+        class _Failed:
+            ok = False
+            connected = False
+            message = f"bootstrap ناموفق بود: {exc}"
+            extracted_symbols: list = []
+            terminal_running = False
+            launched_terminal = False
+        return _Failed()
+
+
+_MT5_STATUS = bootstrap_mt5()
+
 # منبع حقیقت استراتژی‌ها: پوشه strategies/ — هر فایل *.py یک استراتژی مستقل.
 # این تابع هر بار (بعد از آپلود/ویرایش/حذف در همان سشن) دوباره اسکن می‌کند.
 @st.cache_data(show_spinner=False)
@@ -196,6 +230,27 @@ def load_run_records():
 # ======================================================================
 st.title("📊 داشبورد مدیریت، بک‌تست و اجرای زنده استراتژی")
 
+# ======================================================================
+# بنر وضعیت چرخه MT5 (خودکار هنگام استارت داشبورد اجرا شده است)
+# ======================================================================
+_mt5_cached_symbols = mt5_available_symbols()
+if _MT5_STATUS is None:
+    st.caption("⏭️ بوت‌استرپ خودکار MT5 غیرفعال است (MT5_AUTO_BOOTSTRAP=0).")
+elif getattr(_MT5_STATUS, "connected", False):
+    st.success(
+        f"🟢 **متاتریدر ۵ متصل است** — {_MT5_STATUS.message}\n\n"
+        f"نمادهای همگام‌سازی‌شده: {', '.join(_MT5_STATUS.extracted_symbols) or '—'}"
+    )
+else:
+    st.info(
+        f"🟡 **اتصال زنده MT5 در این محیط در دسترس نیست** — {_MT5_STATUS.message}\n\n"
+        "داشبورد به‌صورت خودکار روی داده‌های کش‌شدهٔ MT5 "
+        f"(`market_data/historical` — {_mt5_cached_symbols and len(_mt5_cached_symbols) or 0} نماد) "
+        "کار می‌کند. روی ویندوز با MT5 نصب‌شده، همین چرخه باعث بالا آمدن ترمینال و "
+        "استخراج تازه داده می‌شود.",
+        icon="🔄",
+    )
+
 with st.sidebar:
     st.header("⚙️ منبع داده")
     data_mode = st.radio("حالت داده", ["داده تاریخی (یاهو)", "داده استخراج MT5",
@@ -234,7 +289,32 @@ with st.sidebar:
             mt5_tfs = mt5_symbol_timeframes(mt5_sym) or ["D1"]
             mt5_tf = st.selectbox("بازه زمانی (Timeframe)", mt5_tfs,
                                   index=mt5_tfs.index("D1") if "D1" in mt5_tfs else 0)
-            if st.button("📥 بارگذاری داده MT5"):
+            col_load, col_sync = st.columns([2, 1])
+            with col_load:
+                load_btn = st.button("📥 بارگذاری داده MT5")
+            with col_sync:
+                sync_btn = st.button("🔄 همگام‌سازی از MT5", help=(
+                    "در ویندوز: ترمینال را بالا می‌آورد، به API وصل شده و داده افزایشی "
+                    "استخراج می‌کند؛ سپس تازه‌ترین CSV همین نماد را بارگذاری می‌کند."))
+            if sync_btn:
+                status = None
+                try:
+                    from scripts.mt5_bootstrap import ensure_mt5_pipeline
+
+                    with st.spinner("در حال راه‌اندازی MT5 و استخراج داده…"):
+                        status = ensure_mt5_pipeline()
+                except Exception as exc:
+                    st.error(f"خطا در بوت‌استرپ MT5: {exc}")
+                if status is not None and getattr(status, "connected", False):
+                    st.success(f"✅ {status.message}")
+                    st.cache_data.clear()  # کش فهرست/فریم‌های MT5 تازه شود
+                    mt5_symbols = mt5_available_symbols()
+                    if mt5_sym not in mt5_symbols and mt5_symbols:
+                        mt5_sym = mt5_symbols[0]
+                    load_btn = True  # بلافاصله تازه‌ترین کش را بارگذاری کن
+                elif status is not None:
+                    st.warning(f"⚠️ {status.message} — کش فعلی استفاده می‌شود.")
+            if load_btn:
                 df = mt5_frame(mt5_sym, mt5_tf)
                 if df is None or df.empty:
                     st.error("برای این نماد/بازبازه داده‌ای یافت نشد!")
