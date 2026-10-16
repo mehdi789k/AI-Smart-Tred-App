@@ -183,6 +183,50 @@ class MetaTraderConnector:
             )
         return rows
 
+    # ------------------------------------------------------------------
+    # Trading primitives (used by the live-trading executor)
+    # ------------------------------------------------------------------
+    def account_info(self) -> dict[str, Any]:
+        """Return the current trading account snapshot as a plain dict."""
+        self._ensure_connected()
+        info = mt5.account_info()
+        if info is None:
+            raise MT5ConnectionError(f"Unable to read MT5 account info: {mt5.last_error()}")
+        return info._asdict() if hasattr(info, "_asdict") else dict(info)
+
+    def symbol_info(self, symbol: str) -> dict[str, Any]:
+        self._ensure_connected()
+        info = mt5.symbol_info(symbol)
+        if info is None:
+            raise MT5ConnectionError(f"Unknown symbol '{symbol}': {mt5.last_error()}")
+        return info._asdict() if hasattr(info, "_asdict") else dict(info)
+
+    def symbol_tick(self, symbol: str) -> dict[str, Any]:
+        self._ensure_connected()
+        if not mt5.symbol_select(symbol, True):
+            raise MT5DataUnavailableError(
+                f"Unable to select {symbol} in MetaTrader 5: {mt5.last_error()}."
+            )
+        tick = mt5.symbol_info_tick(symbol)
+        if tick is None:
+            raise MT5DataUnavailableError(f"No tick data for {symbol}: {mt5.last_error()}")
+        return tick._asdict() if hasattr(tick, "_asdict") else dict(tick)
+
+    def positions_get(self, symbol: str | None = None) -> list[dict[str, Any]]:
+        self._ensure_connected()
+        raw = mt5.positions_get(symbol=symbol) if symbol else mt5.positions_get()
+        if raw is None:
+            raise MT5ConnectionError(f"Unable to read open positions: {mt5.last_error()}")
+        return [p._asdict() if hasattr(p, "_asdict") else dict(p) for p in raw]
+
+    def order_send(self, request: dict[str, Any]) -> dict[str, Any]:
+        """Send a raw trade request through ``mt5.order_send``."""
+        self._ensure_connected()
+        result = mt5.order_send(dict(request))
+        if result is None:
+            raise MT5ConnectionError(f"order_send failed with no response: {mt5.last_error()}")
+        return result._asdict() if hasattr(result, "_asdict") else dict(result)
+
     def _ensure_connected(self) -> None:
         if not self.connected:
             raise MT5ConnectionError("The MetaTrader connector is not connected. Call connect() first.")

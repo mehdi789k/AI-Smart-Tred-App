@@ -509,30 +509,147 @@ with tab_opt:
 # تب ۳: سیگنال زنده
 # ----------------------------------------------------------------------
 with tab_live:
-    st.subheader("🔴 پایش زنده و صدور سیگنال (Paper Trading)")
-    st.caption("این بخش استراتژی انتخابی را روی جریان زنده اجرا کرده و "
-               "آخرین سیگنال را نشان می‌دهد. برای اتصال واقعی، حلقه فید را به "
-               "ccxt/کارگزار وصل کنید (data_source.LiveFeed).")
-    spec_key_l = st.selectbox("استراتژی روی داده زنده", strategy_keys,
+    st.subheader("🔴 لایو ترید (Live Trading) — چرخه کامل: MT5 ← سیگنال ← ریسک ← سفارش")
+
+    from live_trading import (LiveTrader, LiveTradingLoop, RiskManager,
+                              TradeJournal, resolve_executor_mode,
+                              LiveTradingError)
+
+    # ---- انتخاب حالت اجرا ----
+    mode_label = st.radio(
+        "حالت اجرای سفارش",
+        ["کاغذی (Paper)", "دمو (Demo)", "واقعی (Live)"],
+        horizontal=True,
+        help=("paper: شبیه‌سازی داخلی با لاگ معاملات. demo/live: ارسال سفارش "
+              "واقعی به ترمینال MetaTrader 5. حالت live additionally نیازمند "
+              "MT5_LIVE_CONFIRM=YES و تأیید صریح در همین پنل است."))
+    exec_mode = resolve_executor_mode(mode_label)
+
+    if exec_mode == "live":
+        st.error("⚠️ **ترید روی حساب واقعی** — تمام سفارش‌ها بدون بازگشت به "
+                 "بروکر ارسال می‌شوند.")
+        ack = st.checkbox("تأیید می‌کنم: مسئولیت زیان کامل با من است.",
+                          key="live_ack")
+    else:
+        ack = True
+
+    spec_key_l = st.selectbox("استراتژی برای اجرای زنده", strategy_keys,
                               key="live_strat",
                               format_func=lambda k: SPECS[k]["title"])
     l_params = {**collect_params(spec_key_l, "live", SPECS),
                 **collect_risk_params("live")}
-    if st.button("🔄 اجرای تحلیل روی آخرین داده"):
-        with st.spinner("تحلیل…"):
+
+    mt5_symbols_live = _mt5_cached_symbols or list(mt5_available_symbols())
+    if not mt5_symbols_live:
+        mt5_symbols_live = ["LIVE-SIM"]
+    c1, c2, c3 = st.columns(3)
+    live_symbol = c1.selectbox("نماد", mt5_symbols_live, key="live_sym")
+    live_tfs = mt5_symbol_timeframes(live_symbol) or ["M5"]
+    live_tf = c2.selectbox("تایم‌فریم", live_tfs, key="live_tf",
+                           index=live_tfs.index("M5") if "M5" in live_tfs else 0)
+    live_interval = c3.number_input("فاصله هر دور (ثانیه)", min_value=5,
+                                    max_value=3600, value=60, step=5)
+
+    # ---- وضعیت اتصال MT5 برای demo/live ----
+    if exec_mode in ("demo", "live"):
+        if getattr(_MT5_STATUS, "connected", False):
+            st.success("🟢 اتصال زنده MT5 برقرار است — سفارش‌ها از طریق "
+                       "API ترمینال ارسال می‌شوند.")
+        else:
+            st.warning("🟡 ترمینال/پکیج MT5 در این محیط در دسترس نیست؛ "
+                       "شروع حلقه با خطای اتصال متوقف می‌شود. برای تست از "
+                       "حالت Paper استفاده کنید.")
+
+    # ---- کنترل حلقه ----
+    loop = st.session_state.get("live_loop")
+    running_now = bool(loop and loop.running)
+    col_start, col_stop, col_once = st.columns(3)
+    start_btn = col_start.button("▶ شروع حلقه خودکار", type="primary",
+                                 disabled=running_now or not ack)
+    stop_btn = col_stop.button("⏹ توقف حلقه", disabled=not running_now)
+    once_btn = col_once.button("🔄 اجرای یک دور دستی")
+
+    def _build_trader():
+        return LiveTrader(spec_key_l, l_params, symbol=live_symbol,
+                          timeframe=live_tf, mode=exec_mode,
+                          initial_cash=float(initial_cash))
+
+    if start_btn:
+        try:
+            trader = _build_trader()
+            new_loop = LiveTradingLoop(trader, interval_sec=float(live_interval))
+            new_loop.start()
+            st.session_state["live_loop"] = new_loop
+            st.session_state["live_trader"] = trader
+            st.rerun()
+        except LiveTradingError as exc:
+            st.error(f"خطا در راه‌اندازی لایو ترید: {exc}")
+    if stop_btn and loop:
+        loop.stop(wait=True, timeout=30)
+        st.info(f"حلقه متوقف شد ({loop.cycles_done} دور اجرا شده).")
+    if once_btn:
+        try:
+            trader_once = st.session_state.get("live_trader")
+            if trader_once is None or running_now:
+                trader_once = _build_trader()
+                st.session_state["live_trader"] = trader_once
+            rep = trader_once.cycle()
+            st.session_state.setdefault("live_reports", []).append(rep.to_dict())
+            st.session_state["live_reports"] = st.session_state["live_reports"][-50:]
+        except LiveTradingError as exc:
+            st.error(str(exc))
+
+    # ---- داشبورد وضعیت ----
+    trader_s = st.session_state.get("live_trader")
+    reports = (st.session_state.get("live_reports") or [])
+    if loop:
+        reports = loop.reports[-20:] or reports
+    if running_now:
+        st.success(f"🟢 حلقه فعال — {exec_mode} روی {live_symbol} ({live_tf})، "
+                   f"هر {int(live_interval)} ثانیه. دورهای انجام‌شده: {loop.cycles_done}")
+    elif trader_s is not None:
+        st.caption("⏹ حلقه متوقف است. با دکمه «اجرای یک دور دستی» یا «شروع حلقه» ادامه دهید.")
+
+    last_rep = reports[-1] if reports else None
+    if last_rep:
+        sig_txt = {1: "🟢 LONG", -1: "🔴 SHORT", 0: "⚪ خنثی"}[last_rep["signal"]]
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("سیگنال", sig_txt)
+        m2.metric("آخرین قیمت", f"{last_rep['price']:.5f}")
+        m3.metric("اکوئیتی حساب", f"{last_rep['account'].get('equity', 0):,.0f}")
+        m4.metric("پوزیشن‌های باز", last_rep["account"].get("open_positions", 0))
+        act = last_rep["action_taken"]
+        badge = {"opened": "✅", "closed": "🔵", "exited": "🎯",
+                 "risk-blocked": "🛑", "error": "❌"}.get(act, "⏸")
+        st.markdown(f"{badge} **اقدام آخرین دور:** `{act}` — {last_rep['detail']}")
+
+    if trader_s is not None:
+        with st.expander("📊 پوزیشن‌های باز فعلی", expanded=True):
             try:
-                res = run_backtest(df, spec_key_l, l_params, initial_cash,
-                                   commission_pct, slippage_pct)
-            except Exception as e:
-                st.error(str(e)); st.stop()
-        eq = res["equity"]
-        last_pos = res["strategy"].position.size if hasattr(res["strategy"], "position") else 0
-        sig = "🟢 خرید/هلد" if last_pos > 0 else ("🔴 فروش/شورت" if last_pos < 0 else "⚪ بدون پوزیشن")
-        st.markdown(f"### وضعیت فعلی: {sig}")
-        st.line_chart(eq)
-        st.write(f"آخرین قیمت: `{df.Close.iloc[-1]:.2f}` | "
-                 f"ارزش کاغذی پرتفو: `{eq.iloc[-1]:,.0f}` | "
-                 f"تعداد سیگنال تاکنون: `{res['metrics']['total_trades']}`")
+                positions = trader_s._open_positions_for_symbol()
+                if positions:
+                    st.dataframe(pd.DataFrame(positions), width="stretch")
+                else:
+                    st.caption("پوزیشن بازی ثبت نشده است.")
+            except Exception as exc:
+                st.warning(f"خواندن پوزیشن‌ها: {exc}")
+
+    if reports:
+        st.markdown("**رویدادهای اخیر حلقه**")
+        st.dataframe(pd.DataFrame(list(reversed(reports))),
+                     width="stretch", hide_index=True)
+
+    st.markdown("---")
+    st.markdown("**📒 ژورنال معاملات زنده** (`market_data/live_trades/live_trades.jsonl`)")
+    journal_rows = TradeJournal().history(limit=100)
+    if journal_rows:
+        st.dataframe(pd.DataFrame(journal_rows), width="stretch", hide_index=True)
+        st.download_button("⬇ دانلود ژورنال JSONL",
+                           "\n".join(json.dumps(r, ensure_ascii=False)
+                                     for r in reversed(journal_rows)).encode("utf-8"),
+                           "live_trades.jsonl", "application/json")
+    else:
+        st.caption("هنوز رویدادی ثبت نشده — اولین دور را اجرا کنید.")
 
 # ----------------------------------------------------------------------
 # تب ۴: مدیریت فایل استراتژی‌ها (آپلود / ویرایش / حذف)
