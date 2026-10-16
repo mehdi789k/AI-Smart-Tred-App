@@ -3,7 +3,7 @@
 داشبورد مدیریت استراتژی (Streamlit)
 
 اجرا (در ترمینال/CMD، نه با اجرای مستقیم در IDLE):
-    streamlit run app.py
+    streamlit run src/python/dashboard/app.py
 
 اگر این فایل را مستقیماً با Python/IDLE اجرا کنید، پیام زیر ظاهر می‌شود:
     WARNING ... missing ScriptRunContext!
@@ -16,11 +16,19 @@ import json
 import os
 import sys
 
+# اطمینان از در دسترس بودن ریشه پکیج داشبورد در sys.path (چه با streamlit
+# از هر مسیری اجرا شود، چه به‌صورت ماژول import شود).
+_DASH_ROOT = os.path.dirname(os.path.abspath(__file__))
+if _DASH_ROOT not in sys.path:
+    sys.path.insert(0, _DASH_ROOT)
+
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from data_source import fetch_history, load_csv, LiveFeed
+from data_source import (fetch_history, load_csv, LiveFeed,
+                         mt5_frame, mt5_available_symbols,
+                         mt5_symbol_timeframes)
 from engine import run_backtest, optimize_strategy
 import strategies.base as sb
 
@@ -190,8 +198,8 @@ st.title("📊 داشبورد مدیریت، بک‌تست و اجرای زند�
 
 with st.sidebar:
     st.header("⚙️ منبع داده")
-    data_mode = st.radio("حالت داده", ["داده تاریخی (یاهو)", "آپلود CSV",
-                                       "فید زنده (Paper Trading)"],
+    data_mode = st.radio("حالت داده", ["داده تاریخی (یاهو)", "داده استخراج MT5",
+                                       "آپلود CSV", "فید زنده (Paper Trading)"],
                          index=0)
 
     df = None
@@ -212,6 +220,28 @@ with st.sidebar:
                 st.session_state["df"] = df
                 st.session_state["ticker_label"] = f"{ticker} ({interval})"
                 st.success(f"{len(df)} رک بارگذاری شد.")
+    elif data_mode == "داده استخراج MT5":
+        # کش CSV تولیدشده توسط src/python/data/main.py (استخراج از متاتریدر ۵)
+        mt5_symbols = mt5_available_symbols()
+        if not mt5_symbols:
+            st.warning(
+                "هیچ داده استخراج‌شده MT5 در market_data/historical یافت نشد.\n\n"
+                "ابتدا ابزار استخراج را اجرا کنید:\n\n"
+                "`python -m src.python.data.main --symbols XAUUSD --timeframes D1,H1`\n\n"
+                "(نیاز به ترمینال MetaTrader 5 — فایل .env را تنظیم کنید)")
+        else:
+            mt5_sym = st.selectbox("نماد MT5", mt5_symbols)
+            mt5_tfs = mt5_symbol_timeframes(mt5_sym) or ["D1"]
+            mt5_tf = st.selectbox("بازه زمانی (Timeframe)", mt5_tfs,
+                                  index=mt5_tfs.index("D1") if "D1" in mt5_tfs else 0)
+            if st.button("📥 بارگذاری داده MT5"):
+                df = mt5_frame(mt5_sym, mt5_tf)
+                if df is None or df.empty:
+                    st.error("برای این نماد/بازبازه داده‌ای یافت نشد!")
+                else:
+                    st.session_state["df"] = df
+                    st.session_state["ticker_label"] = f"{mt5_sym} ({mt5_tf} · MT5)"
+                    st.success(f"{len(df)} رک از خروجی استخراج MT5 بارگذاری شد.")
     elif data_mode == "آپلود CSV":
         up = st.file_uploader("فایل CSV با ستون‌های Date/OHLCV", type=["csv"])
         if up is not None:

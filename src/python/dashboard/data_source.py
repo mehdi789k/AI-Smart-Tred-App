@@ -5,17 +5,85 @@
 - آپلود فایل CSV توسط کاربر
 - شبیه‌سازی داده زنده (Live Feed) برای تست استراتژی در حالت Paper Trading
 """
+import glob
 import os
 import time
 import datetime as dt
 
 import pandas as pd
-import yfinance as yf
+
+try:  # yfinance اختیاری است؛ بدون آن هم داده MT5/CSV کار می‌کند.
+    import yfinance as yf
+except Exception:  # pragma: no cover
+    yf = None
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
 OHLCV = ["Open", "High", "Low", "Close", "Volume"]
+
+# کش CSV خروجی ابزار استخراج داده MT5 (src/python/data/main.py):
+# market_data/historical/<symbol-hash>/<SYMBOL>_<TF>_<ts>_<uuid>.csv
+MT5_EXPORT_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "market_data", "historical")
+)
+
+# نگاشت بازبازه‌های MT5 به اینتروال‌های yfinance (برای دانلود مستقیم)
+_MT5_TO_YF_INTERVAL = {
+    "M1": "1m", "M5": "5m", "M15": "15m", "M30": "30m",
+    "H1": "1h", "H4": "1h", "D1": "1d", "W1": "1wk", "MN1": "1mo",
+}
+
+
+def list_mt5_exports(symbol=None, timeframe=None):
+    """فهرست فایل‌های CSV تولیدشده توسط استخراج MT5 در market_data/historical."""
+    if not os.path.isdir(MT5_EXPORT_DIR):
+        return []
+    pattern = "*.csv"
+    if symbol:
+        pattern = f"*{symbol.upper()}*_{(timeframe or '*')}*.csv" if timeframe else f"*{symbol.upper()}*.csv"
+    found = []
+    for sym_dir in sorted(os.listdir(MT5_EXPORT_DIR)):
+        d = os.path.join(MT5_EXPORT_DIR, sym_dir)
+        if os.path.isdir(d) and sym_dir != "runs":
+            found.extend(sorted(glob.glob(os.path.join(d, pattern))))
+    return found
+
+
+def load_mt5_csv(path):
+    """خواندن یک CSV خروجی استخراج MT5 و تبدیل به DataFrame با ایندکس زمانی."""
+    df = pd.read_csv(path, parse_dates=["time"]) if "time" in pd.read_csv(path, nrows=0).columns else None
+    if df is None:
+        # قالب استاندارد استخراج: timestamp/open/high/low/close/volume...
+        raw = pd.read_csv(path)
+        ts_col = next((c for c in ("timestamp", "time", "date", "datetime") if c in raw.columns), raw.columns[0])
+        df = raw.copy()
+        df[ts_col] = pd.to_datetime(df[ts_col], utc=True, format="mixed")
+        df = df.set_index(ts_col).tz_localize(None)
+        ren = {"open": "Open", "high": "High", "low": "Low", "close": "Close", "volume": "Volume"}
+        df = df.rename(columns=ren)
+        keep = [c for c in OHLCV if c in df.columns]
+        df = df[keep].apply(pd.to_numeric, errors="coerce").dropna()
+        if "Volume" not in df.columns:
+            df["Volume"] = 0
+        return df
+    return _normalize(df)
+
+
+def mt5_frame(symbol, timeframe="D1"):
+    """آخرین (تازه‌ترین) CSV استخراج‌شده برای نماد/بازبازه MT5 را بارگذاری می‌کند.
+
+    اگر داده‌ای یافت نشد، None برمی‌گرداند.
+    """
+    files = list_mt5_exports(symbol, timeframe)
+    if not files:
+        return None
+    newest = max(files, key=os.path.getmtime)
+    try:
+        df = load_mt5_csv(newest)
+        return df if not df.empty else None
+    except Exception:
+        return None
 
 
 def _normalize(df):
@@ -31,8 +99,37 @@ def _normalize(df):
     return df
 
 
+def mt5_available_symbols():
+    """نمادهای موجود در کش CSV خروجی استخراج MT5."""
+    symbols = []
+    for path in list_mt5_exports():
+        name = os.path.basename(path)
+        parts = name.split("_")
+        # قالب: SYMBOL_TF_timestamp_uuid.csv
+        if len(parts) >= 4:
+            sym = "_".join(parts[:-3])
+            if sym and sym not in symbols:
+                symbols.append(sym)
+    return sorted(symbols)
+
+
+def mt5_symbol_timeframes(symbol):
+    """بازبازهایی که برای یک نماد در کش MT5 موجودند."""
+    tfs = []
+    for path in list_mt5_exports(symbol):
+        parts = os.path.basename(path).split("_")
+        if len(parts) >= 4:
+            tf = parts[-3]
+            if tf not in tfs:
+                tfs.append(tf)
+    order = ["M1", "M5", "M15", "M30", "H1", "H4", "D1", "W1", "MN1"]
+    return sorted(tfs, key=lambda t: order.index(t) if t in order else 99)
+
+
 def fetch_history(ticker, start, end, interval="1d", use_cache=True):
     """دانلود داده تاریخی با کش روی دیسک (برای اجرای آفلاین/سریع)."""
+    if yf is None:
+        raise RuntimeError("ماژول yfinance نصب نیست؛ از منبع «داده MT5» یا آپلود CSV استفاده کنید.")
     if isinstance(start, dt.date):
         start = dt.datetime.combine(start, dt.time())
     if isinstance(end, dt.date):
