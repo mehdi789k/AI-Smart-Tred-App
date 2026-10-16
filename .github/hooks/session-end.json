@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "py .github/hooks/project_checks.py --event validation"
+      }
+    ]
+  }
+}
