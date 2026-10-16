@@ -336,6 +336,18 @@ def discover_strategies():
     return specs
 
 
+def get_strategy_class_from_key(key):
+    """یافتن کلاس استراتژی (bt.Strategy) از روی کلید SPEC — برای موتور لایو ترید."""
+    for path in sorted(glob.glob(os.path.join(HERE, "*.py"))):
+        fname = os.path.basename(path)
+        if fname in ("base.py", "__init__.py"):
+            continue
+        loaded = load_strategy_file(path)
+        if loaded and loaded[0] == key:
+            return loaded[1].get("class")
+    return None
+
+
 def get_strategy_source(key):
     """متن سورس فعلی یک استراتژی (برای نمایش در ویرایشگر داشبورد)."""
     specs = discover_strategies()
